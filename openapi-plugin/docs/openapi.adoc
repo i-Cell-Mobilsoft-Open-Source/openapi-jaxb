@@ -169,6 +169,6 @@ ie. from the following xsd only the `text` will be displayed as description
 
 == Example
 
-Poc application: openapi-demo
+Poc application: link:../../openapi-demo[openapi-demo]
 
 
