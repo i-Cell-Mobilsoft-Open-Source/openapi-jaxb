@@ -1,6 +1,8 @@
 = OpenApi Demo DTO
 
-DTO modul az openApi demo-hoz. 
-Egy pálda xsd-t tartalmaz, ebből kerülnek kigenerálásra a dto objektumok, OpenAPI annotációkkal ellátva.
+DTO module for openApi demo.
+A sample xsd is used to define the business objects,
+XJC is used with the `openapi-jaxb` plugin to process the xsd and
+generate the java representations annotated with OpenAPI annotations.
 
 link:src/main/resources/xsd/hu/icellmobilsoft/jaxb/openapi/dto/sample.xsd[]

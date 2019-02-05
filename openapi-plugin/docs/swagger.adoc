@@ -1,7 +1,8 @@
-= Swagger generálás
+= Swagger generation
 
-A https://github.com/redlab/swagger-jaxb[`be.redlab.jaxb:swagger-jaxb`] egy https://github.com/peneksglazami/swagger-jaxb[forkját] használja.
-A fork kibővíti az eredeti plugin-t az `<xs:documentation>` tag-ek feldolgozásával.
-A fork-ot refaktoráltuk (https://bitbucket.icellmobilsoft.hu/projects/POC/repos/swagger-jaxb/browse[`hu.icellmobilsoft.jaxb:swagger-jaxb`]), hogy a swagger specifikus részek könyebben cserélhetőek legyenek OpenAPI-ra.
+It uses a https://github.com/peneksglazami/swagger-jaxb[fork] of the https://github.com/redlab/swagger-jaxb[`be.redlab.jaxb:swagger-jaxb`] xjc plugin.
+The used fork extends the original plugin with the processing of the `<xs:documentation>` tags.
+The fork had been refactored  (https://bitbucket.icellmobilsoft.hu/projects/POC/repos/swagger-jaxb/browse[`hu.icellmobilsoft.jaxb:swagger-jaxb`])
+in order to simplify porting from Swagger to OpenAPI.
 
-A generálás a `-swaggerify` opcióval kapcsolható ki be, bővebb info: https://github.com/redlab/swagger-jaxb/blob/master/README.md
+The original Swagger compatible genearation is still available with providing the `-swaggerify` argument, see: https://github.com/redlab/swagger-jaxb/blob/master/README.md

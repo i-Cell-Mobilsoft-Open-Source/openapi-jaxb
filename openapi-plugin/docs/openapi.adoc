@@ -1,9 +1,9 @@
-= OpenAPI generálás
+= OpenAPI generation
 
-== Használat
-A plugin a `-openapify` kapcsolóval aktiválható.
+== Usage
+The plugin is activated with the `-openapify` argument.
 
-=== Használat az org.jvnet.jaxb2.maven2:maven-jaxb2-plugin maven pluginnal
+=== Use with org.jvnet.jaxb2.maven2:maven-jaxb2-plugin maven plugin
 [source, xml]
 ----
 ...
@@ -44,16 +44,16 @@ A plugin a `-openapify` kapcsolóval aktiválható.
     </configuration>
 </plugin>
 ----
-<1> `//plugin/configuration/args` alatt engedélyezni az `<arguments>-openapify</arguments>` hozzáadásával
-<2> `//plugin/configuration/plugins` alá kell felvenni plugin-ként a `hu.icellmobilsoft.jaxb:openapi-jaxb` artifact-ot.
-<3> Az eredeti plugin leírás szerint itt meg kellene adni a plugin tranzitív függőségeit, viszont működik enélkül is...
+<1> activate the plugin with adding `<arguments>-openapify</arguments>` to `//plugin/configuration/args`.
+<2> include the artifact `hu.icellmobilsoft.jaxb:openapi-jaxb` under `//plugin/configuration/plugins`.
+<3> The original plugin README states that the transitive dependencies should be provided here, however it work without it..
 
 
-NOTE: A `-swaggerify` kapcsoló továbbra is működik, a két kapcsoló akár egyszerre is használható, 
-ekkor mind a Swagger-es mind az OpenAPI-s annotációk legenerálásra kerülnek.
+NOTE: The `-swaggerify` argument is still available, both arguments can be provided, in that case the generated classes will be annotated with both OpenApi and Swagger related annotations.
 
-IMPORTANT: A legenerált java fájlok fordításához be kell húzni a projektbe 
-`org.eclipse.microprofile.openapi:microprofile-openapi-api` artifact-ot legalább _provided_ scope-pal. (Ez tartalmazza az OpenAPI annotációkat)
+IMPORTANT: In order to compile the generated sources the `org.eclipse.microprofile.openapi:microprofile-openapi-api`
+artifact should be included as dependency (at least with _provided_ scope)!
+(This artifact contains the OpenApi annotations)
 [source, xml]
 ----
 <project ...>
@@ -68,11 +68,10 @@ IMPORTANT: A legenerált java fájlok fordításához be kell húzni a projektbe
 			</dependency>
 ----
 
-== Működés
-Az XSD-ből generált osztályokat annotálja az 
-`org.eclipse.microprofile.openapi.annotations.media.Schema` annotációval.
+== Details
+It annotates the classes generated from XSD-s with the `org.eclipse.microprofile.openapi.annotations.media.Schema` annotation.
 
-=== XSD mappelés
+=== XSD Mapping
 
 [options="header"]
 |===
@@ -80,66 +79,57 @@ Az XSD-ből generált osztályokat annotálja az
 
 |`//annotation/documentation`|`Schema.description`
 
-|`//complexType/@name`|Osztály szintű `Schema.name`
+|`//complexType/@name`|Class level `Schema.name`
 
-|`//element/@name`|Field szintű `Schema.name`
+|`//element/@name`|Field level `Schema.name`
 
 |`//element/@maxOccurs`|`Schema.maxLength`
 
 |`//element/@minOccurs`|`Schema.minLength`
 
-|`//simpleType/restriction/minInclusive`|`Schema.minimum` és `Schema.exclusiveMinimum = false`
+|`//simpleType/restriction/minInclusive`|`Schema.minimum` and `Schema.exclusiveMinimum = false`
 
-|`//simpleType/restriction/minExclusive`|`Schema.minimum` és `Schema.exclusiveMinimum = true`
+|`//simpleType/restriction/minExclusive`|`Schema.minimum` and `Schema.exclusiveMinimum = true`
 
-|`//simpleType/restriction/maxInclusive`|`Schema.maximum` és `Schema.exclusiveMaximum = false`
+|`//simpleType/restriction/maxInclusive`|`Schema.maximum` and `Schema.exclusiveMaximum = false`
 
-|`//simpleType/restriction/maxExclusive`|`Schema.maximum` és `Schema.exclusiveMaximum = true`
+|`//simpleType/restriction/maxExclusive`|`Schema.maximum` and `Schema.exclusiveMaximum = true`
 
 |`//simpleType/restriction/minLength`|`Schema.minLength`
 
 |`//simpleType/restriction/maxLength`|`Schema.maxLength`
 
-|`//simpleType/restriction/length` (Előnyt élvez a maxLength,minLength-hez képest)|`Schema.maxLength` és `Schema.minLength`
+|`//simpleType/restriction/length` (Has a higher priority than maxLength,minLength)|`Schema.maxLength` and `Schema.minLength`
 
 |`//simpleType/restriction/pattern`|`Schema.pattern`
 
 |`//simpleType/restriction[@base="xs:string"]/enumeration[n]/@value`|`Schema.enumeration[n]`
 |===
 
-=== Enum kezelés
+=== Enum handing
 
-A thorntail openAPI implementációja nem minden esetben értelmezi a `Schema.enumeration`-re beállított értékeket, 
-valamint az xsd-ben megadott dokumentáció sem kerül legenerálásra az openAPI yaml-be. Emiatt enumok esetében a description kiterjesztésre kerül az enum értékekkel, és a dokumentációval.
+Some openAPI implementations doesn't process the `Schema.enumeration`-s properly,
+furthermore the `<xsd:documentation>`-s provided on the enumeration constants are not generated into the openAPI yaml.
+Because of these the `description` property is extended for enums with the list of possible values and their respective documentation (if any).
 
-==== Példa
+==== Example
 
 ===== xsd
 [source, xml]
 ----
 <xs:simpleType name="OperationType">
 		<xs:annotation>
-			<xs:documentation xml:lang="en">Invoice operation type</xs:documentation>
+			<xs:documentation xml:lang="en">Operation type</xs:documentation>
 		</xs:annotation>
 		<xs:restriction base="xs:string">
 			<xs:enumeration value="CREATE">
 				<xs:annotation>
-					<xs:documentation xml:lang="en">Original invoice exchange</xs:documentation>
+					<xs:documentation xml:lang="en">Creation exchange</xs:documentation>
 				</xs:annotation>
 			</xs:enumeration>
 			<xs:enumeration value="MODIFY">
 				<xs:annotation>
-					<xs:documentation xml:lang="en">Modification invoice exchange</xs:documentation>
-				</xs:annotation>
-			</xs:enumeration>
-			<xs:enumeration value="STORNO">
-				<xs:annotation>
-					<xs:documentation xml:lang="en">Exchange concerning invoice invalidation</xs:documentation>
-				</xs:annotation>
-			</xs:enumeration>
-			<xs:enumeration value="ANNUL">
-				<xs:annotation>
-					<xs:documentation xml:lang="en">Technical annulment of previous exchange</xs:documentation>
+					<xs:documentation xml:lang="en">Modification exchange</xs:documentation>
 				</xs:annotation>
 			</xs:enumeration>
 		</xs:restriction>
@@ -149,30 +139,36 @@ valamint az xsd-ben megadott dokumentáció sem kerül legenerálásra az openAP
 ===== Description
 [source,markdown]
 ----
-Invoice operation type
-* **CREATE** - Original invoice exchange
-* **MODIFY** - Modification invoice exchange
-* **STORNO** - Exchange concerning invoice invalidation
-* **ANNUL** - Technical annulment of previous exchange
+Operation type
+* **CREATE** - Creation exchange
+* **MODIFY** - Modification exchange
 ----
 
-===== Renderelve
+===== Rendered
 
 [.lead]
-Invoice operation type
+Operation type
 
-* **CREATE** - Original invoice exchange	
-* **MODIFY** - Modification invoice exchange	
-* **STORNO** - Exchange concerning invoice invalidation
-* **ANNUL** - Technical annulment of previous exchange
+* **CREATE** - Creation exchange
+* **MODIFY** - Modification exchange
 
-=== Hiányosságok
-Ismert korlátok:
+=== Issues
+Known limitations:
 
-* Ha az xsd-ben az `//annotation` tag alatt több `documentation` is definiálva van (pl nyelvesített doc) akkor csak a sorrendben utolsó kerül feldolgozásra. 
+* When multiple `documentation` is defined under `//annotation` (ie. multi-language documentation), then only the last one will be processed.
++
+ie. from the following xsd only the `text` will be displayed as description
++
+[source, xml]
+----
+<xs:annotation>
+    <xs:documentation xml:lang="hu">szöveg</xs:documentation>
+    <xs:documentation xml:lang="en">text</xs:documentation>
+</xs:annotation>
+----
 
-== Példa
+== Example
 
-Poc alkalmazás: https://bitbucket.icellmobilsoft.hu/projects/POC/repos/openapi-jaxb/browse/openapi-demo
+Poc application: openapi-demo
 
 

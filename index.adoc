@@ -3,7 +3,7 @@
 :sectnums:
 = OpenApi 3 Plugin
 
-openapi-jaxb plugin és demo alkalmazás
+openapi-jaxb plugin and demo application
 
 include::openapi-plugin/plugin.adoc[levelOffset=1]
 
