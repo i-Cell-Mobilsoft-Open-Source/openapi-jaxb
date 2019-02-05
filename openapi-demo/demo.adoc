@@ -1,0 +1,18 @@
+= OpenApi POC
+:demoVersion: 1.0.0-SNAPSHOT
+:thorntailJar: openapi-demo-service/target/openapi-demo-service-{demoVersion}-thorntail.jar
+
+POC alkalmazás openApi plugin-hoz
+
+== Modulok
+
+include::openapi-demo-dto/demo-dto.adoc[levelOffset=2]
+
+include::openapi-demo-service/demo-service.adoc[levelOffset=2]
+
+== Indítás
+
+. `[openapi-demo]$ mvn clean install`
+. `[openapi-demo]$ java -jar {thorntailJar}`
+
+Indítás után az OpenApi yaml elérhető a `localhost:8080/openapi` helyen.

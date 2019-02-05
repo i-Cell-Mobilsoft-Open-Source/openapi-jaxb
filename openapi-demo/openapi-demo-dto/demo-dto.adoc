@@ -1,0 +1,6 @@
+= OpenApi Demo DTO
+
+DTO modul az openApi demo-hoz. 
+Egy pálda xsd-t tartalmaz, ebből kerülnek kigenerálásra a dto objektumok, OpenAPI annotációkkal ellátva.
+
+link:src/main/resources/xsd/hu/icellmobilsoft/jaxb/openapi/dto/sample.xsd[]

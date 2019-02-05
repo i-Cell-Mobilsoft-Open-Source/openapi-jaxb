@@ -1,0 +1,4 @@
+= OpenApi Demo service
+
+Egy REST végpontot tartalmaz (`/sample/xsd`) aminek a request és response body-ja az xsd-ből kigenerált objektum.
+Az OpenApi modul behúzásra került, így a `/openapi` végponton elérhető a leíró yaml.
