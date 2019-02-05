@@ -1,1 +1,10 @@
+:toc: left
+:toclevels: 3
+:sectnums:
 = OpenApi 3 Plugin
+
+openapi-jaxb plugin és demo alkalmazás
+
+include::openapi-plugin/plugin.adoc[levelOffset=1]
+
+include::openapi-demo/demo.adoc[levelOffset=1]
