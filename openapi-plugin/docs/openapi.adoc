@@ -1,0 +1,178 @@
+= OpenAPI generálás
+
+== Használat
+A plugin a `-openapify` kapcsolóval aktiválható.
+
+=== Használat az org.jvnet.jaxb2.maven2:maven-jaxb2-plugin maven pluginnal
+[source, xml]
+----
+...
+<plugin>
+    <groupId>org.jvnet.jaxb2.maven2</groupId>
+    <artifactId>maven-jaxb2-plugin</artifactId>
+    <version>0.13.3</version>
+    ...
+    <configuration>
+        <schemaDirectory>src/main/resources</schemaDirectory>
+        <schemaIncludes>
+            <include>xsd/hu/icellmobilsoft/icon/dto/super.xsd</include>
+        </schemaIncludes>
+        <generateDirectory>${project.build.directory}/generated-sources/src/main/java</generateDirectory>
+        <args>
+			<arguments>-openapify</arguments> // <1>
+        </args>
+        <plugins>
+            <plugin> // <2>
+				<groupId>hu.icellmobilsoft.jaxb</groupId>
+				<artifactId>openapi-jaxb</artifactId>
+				<version>1.0.0</version>
+            </plugin>
+
+        </plugins>
+        <!--<dependencies>--> // <3>
+			<!--<dependency>-->
+				<!--<groupId>org.eclipse.microprofile.openapi</groupId>-->
+				<!--<artifactId>microprofile-openapi-api</artifactId>-->
+				<!--<version>1.0.1</version>-->
+			<!--</dependency>-->
+			<!--<dependency>-->
+				<!--<groupId>com.sun.xml.bind</groupId>-->
+				<!--<artifactId>jaxb-core</artifactId>-->
+				<!--<version>2.2.11</version>-->
+			<!--</dependency>-->
+        <!--</dependencies>-->
+    </configuration>
+</plugin>
+----
+<1> `//plugin/configuration/args` alatt engedélyezni az `<arguments>-openapify</arguments>` hozzáadásával
+<2> `//plugin/configuration/plugins` alá kell felvenni plugin-ként a `hu.icellmobilsoft.jaxb:openapi-jaxb` artifact-ot.
+<3> Az eredeti plugin leírás szerint itt meg kellene adni a plugin tranzitív függőségeit, viszont működik enélkül is...
+
+
+NOTE: A `-swaggerify` kapcsoló továbbra is működik, a két kapcsoló akár egyszerre is használható, 
+ekkor mind a Swagger-es mind az OpenAPI-s annotációk legenerálásra kerülnek.
+
+IMPORTANT: A legenerált java fájlok fordításához be kell húzni a projektbe 
+`org.eclipse.microprofile.openapi:microprofile-openapi-api` artifact-ot legalább _provided_ scope-pal. (Ez tartalmazza az OpenAPI annotációkat)
+[source, xml]
+----
+<project ...>
+	...
+	<dependencies>
+			...
+			<dependency>
+				<groupId>org.eclipse.microprofile.openapi</groupId>
+				<artifactId>microprofile-openapi-api</artifactId>
+				<version>1.0.1</version>
+				<scope>provided</scope>
+			</dependency>
+----
+
+== Működés
+Az XSD-ből generált osztályokat annotálja az 
+`org.eclipse.microprofile.openapi.annotations.media.Schema` annotációval.
+
+=== XSD mappelés
+
+[options="header"]
+|===
+|XSD|Schema
+
+|`//annotation/documentation`|`Schema.description`
+
+|`//complexType/@name`|Osztály szintű `Schema.name`
+
+|`//element/@name`|Field szintű `Schema.name`
+
+|`//element/@maxOccurs`|`Schema.maxLength`
+
+|`//element/@minOccurs`|`Schema.minLength`
+
+|`//simpleType/restriction/minInclusive`|`Schema.minimum` és `Schema.exclusiveMinimum = false`
+
+|`//simpleType/restriction/minExclusive`|`Schema.minimum` és `Schema.exclusiveMinimum = true`
+
+|`//simpleType/restriction/maxInclusive`|`Schema.maximum` és `Schema.exclusiveMaximum = false`
+
+|`//simpleType/restriction/maxExclusive`|`Schema.maximum` és `Schema.exclusiveMaximum = true`
+
+|`//simpleType/restriction/minLength`|`Schema.minLength`
+
+|`//simpleType/restriction/maxLength`|`Schema.maxLength`
+
+|`//simpleType/restriction/length` (Előnyt élvez a maxLength,minLength-hez képest)|`Schema.maxLength` és `Schema.minLength`
+
+|`//simpleType/restriction/pattern`|`Schema.pattern`
+
+|`//simpleType/restriction[@base="xs:string"]/enumeration[n]/@value`|`Schema.enumeration[n]`
+|===
+
+=== Enum kezelés
+
+A thorntail openAPI implementációja nem minden esetben értelmezi a `Schema.enumeration`-re beállított értékeket, 
+valamint az xsd-ben megadott dokumentáció sem kerül legenerálásra az openAPI yaml-be. Emiatt enumok esetében a description kiterjesztésre kerül az enum értékekkel, és a dokumentációval.
+
+==== Példa
+
+===== xsd
+[source, xml]
+----
+<xs:simpleType name="OperationType">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">Invoice operation type</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="CREATE">
+				<xs:annotation>
+					<xs:documentation xml:lang="en">Original invoice exchange</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="MODIFY">
+				<xs:annotation>
+					<xs:documentation xml:lang="en">Modification invoice exchange</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="STORNO">
+				<xs:annotation>
+					<xs:documentation xml:lang="en">Exchange concerning invoice invalidation</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="ANNUL">
+				<xs:annotation>
+					<xs:documentation xml:lang="en">Technical annulment of previous exchange</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+		</xs:restriction>
+	</xs:simpleType>
+----
+
+===== Description
+[source,markdown]
+----
+Invoice operation type
+* **CREATE** - Original invoice exchange
+* **MODIFY** - Modification invoice exchange
+* **STORNO** - Exchange concerning invoice invalidation
+* **ANNUL** - Technical annulment of previous exchange
+----
+
+===== Renderelve
+
+[.lead]
+Invoice operation type
+
+* **CREATE** - Original invoice exchange	
+* **MODIFY** - Modification invoice exchange	
+* **STORNO** - Exchange concerning invoice invalidation
+* **ANNUL** - Technical annulment of previous exchange
+
+=== Hiányosságok
+Ismert korlátok:
+
+* Ha az xsd-ben az `//annotation` tag alatt több `documentation` is definiálva van (pl nyelvesített doc) akkor csak a sorrendben utolsó kerül feldolgozásra. 
+
+== Példa
+
+Poc alkalmazás: https://bitbucket.icellmobilsoft.hu/projects/POC/repos/openapi-jaxb/browse/openapi-demo
+
+

@@ -1,0 +1,9 @@
+= openapi-jaxb plugin
+
+A swagger-jaxb XJC plugin kiterjesztése.
+Futási módtól függően XSD-ből generálásnál a generált ozstályokat
+felannotálja a megfelelő OpenAPI vagy Swagger annotációkkal.
+
+include::docs/swagger.adoc[levelOffset=1]
+
+include::docs/openapi.adoc[levelOffset=1]
