@@ -6,9 +6,9 @@ POC application for openApi plugin
 
 == Modules
 
-include::openapi-demo-dto/demo-dto.adoc[levelOffset=2]
+include::openapi-demo-dto/demo-dto.adoc[leveloffset=2]
 
-include::openapi-demo-service/demo-service.adoc[levelOffset=2]
+include::openapi-demo-service/demo-service.adoc[leveloffset=2]
 
 == Running the POC
 
@@ -18,6 +18,11 @@ include::openapi-demo-service/demo-service.adoc[levelOffset=2]
 After startup the OpenApi yaml is available under `localhost:8080/openapi`.
 
 == Generated examples
-
+ifndef::readme[]
 * link:generated/openapi.yaml[OpenAPI 3.0 YAML]
 * link:generated/redoc-static.html[HTML generated from OpenAPI yaml with redoc]
+endif::readme[]
+ifdef::readme[]
+* link:openapi-demo/generated/openapi.yaml[OpenAPI 3.0 YAML]
+* link:openapi-demo/generated/redoc-static.html[HTML generated from OpenAPI yaml with redoc]
+endif::readme[]
