@@ -1,0 +1,91 @@
+---
+openapi: 3.0.1
+info:
+  title: OpenAPI xsd POC
+  description: OpenAPI xsd plugin proof-of-concept application
+  version: 1.0.0-SNAPSHOT
+tags:
+- name: OpenAPI xsd example
+  description: Rest service example with objects generated from xsd
+paths:
+  /sample/xsd:
+    post:
+      tags:
+      - OpenAPI xsd example
+      summary: OpenAPI xsd operation example
+      description: Rest operation example with objects generated from xsd
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SampleType'
+          text/xml:
+            schema:
+              $ref: '#/components/schemas/SampleType'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/SampleType'
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SampleType'
+            text/xml:
+              schema:
+                $ref: '#/components/schemas/SampleType'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/SampleType'
+components:
+  schemas:
+    SampleType:
+      description: Sample type (typeDoc)
+      required:
+      - someCollection
+      - someEnum
+      - someString
+      properties:
+        someCollection:
+          title: someCollection
+          description: SampleObject array, containing 2 to 10 elements (elementDoc)
+          maxItems: 10
+          minItems: 2
+          type: array
+          items:
+            description: Sample object (typeDoc)
+            required:
+            - property
+            properties:
+              property:
+                title: property
+                description: property
+                maxLength: 50
+                minLength: 10
+                pattern: .*[^\s].*
+                type: string
+        someEnum:
+          title: someEnum
+          description: |
+            String value restricted (elementDoc)
+
+             Enumeration values:
+            * **ABC** - ABC enum
+            * **XYZ** - XYZ enum
+          type: string
+        someInt:
+          format: int32
+          title: someInt
+          description: integer greater than 4, less than or equal to 10 (elementDoc)
+          maximum: 10
+          exclusiveMaximum: false
+          minimum: 4
+          exclusiveMinimum: true
+          type: integer
+        someString:
+          title: someString
+          description: String value restricted (elementDoc)
+          maxLength: 50
+          minLength: 10
+          pattern: .*[^\s].*
+          type: string
