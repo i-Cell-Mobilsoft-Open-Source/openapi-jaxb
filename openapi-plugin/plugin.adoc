@@ -4,6 +4,6 @@ An extension to the swagger-jaxb XJC plugin.
 When generating java code from xsd,
 this plugin annotates the generated classes with the proper OpenAPI and/or Swagger annotations (depending on the provided argument).
 
-include::docs/swagger.adoc[levelOffset=1]
+include::docs/swagger.adoc[leveloffset=1]
 
-include::docs/openapi.adoc[levelOffset=1]
+include::docs/openapi.adoc[leveloffset=1]

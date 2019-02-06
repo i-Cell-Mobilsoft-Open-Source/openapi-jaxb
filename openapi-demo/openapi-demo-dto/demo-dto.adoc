@@ -5,4 +5,5 @@ A sample xsd is used to define the business objects,
 XJC is used with the `openapi-jaxb` plugin to process the xsd and
 generate the java representations annotated with OpenAPI annotations.
 
-link:src/main/resources/xsd/hu/icellmobilsoft/jaxb/openapi/dto/sample.xsd[]
+ifndef::readme[link:src/main/resources/xsd/hu/icellmobilsoft/jaxb/openapi/dto/sample.xsd[]]
+ifdef::readme[link:openapi-demo/openapi-demo-dto/src/main/resources/xsd/hu/icellmobilsoft/jaxb/openapi/dto/sample.xsd[]]
