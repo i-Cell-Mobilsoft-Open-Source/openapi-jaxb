@@ -1,8 +1,10 @@
 package hu.icellmobilsoft.jaxb.openapi.process;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Collection;
 import java.util.List;
+import java.util.logging.Logger;
 
 import be.redlab.jaxb.swagger.XJCHelper;
 import be.redlab.jaxb.swagger.process.AbstractProcessUtil;
@@ -36,6 +38,7 @@ public class OpenApiProcessUtil extends AbstractProcessUtil {
 
     private static final OpenApiProcessUtil INSTANCE = new OpenApiProcessUtil();
     public static final String ENUMERATION_VALUES = "\n Enumeration values:\n";
+    private Logger log = Logger.getLogger(OpenApiProcessUtil.class.getName());
 
     protected OpenApiProcessUtil() {
     }
@@ -125,6 +128,7 @@ public class OpenApiProcessUtil extends AbstractProcessUtil {
      * Some OpenAPI implementations does not include {@link Schema#enumeration()} into openapi yaml,
      * therefore this creates a CommonMark syntax string
      * containing the list of enum constants extended with their respective <xs:documentation>
+     *
      * @param eo
      * @return
      */
@@ -138,11 +142,13 @@ public class OpenApiProcessUtil extends AbstractProcessUtil {
                 constantDescription.append("* ");
                 String enumName = eco.constRef.getName().substring(classNameLength);
                 constantDescription.append("**").append(enumName).append("**");
-                if(eco.target.getSchemaComponent() != null && eco.target.getSchemaComponent().getAnnotation() != null && eco.target.getSchemaComponent().getAnnotation().getAnnotation() != null){
+                if (eco.target.getSchemaComponent() != null &&
+                    eco.target.getSchemaComponent().getAnnotation() != null &&
+                    eco.target.getSchemaComponent().getAnnotation().getAnnotation() != null) {
                     Object annotationObj = eco.target.getSchemaComponent().getAnnotation().getAnnotation();
                     if (annotationObj != null && annotationObj instanceof BindInfo) {
                         String enumDocumentation = ((BindInfo) annotationObj).getDocumentation();
-                        if(enumDocumentation != null){
+                        if (enumDocumentation != null) {
                             constantDescription.append(" - ").append(enumDocumentation);
                         }
                     }
@@ -175,8 +181,8 @@ public class OpenApiProcessUtil extends AbstractProcessUtil {
      * Obtains the given property from targetClass using propertyName, if its a collection property {@link Schema#type()} is set to {@link SchemaType#ARRAY},
      * additionally {@link Schema#maxItems()}, {@link Schema#minItems()} is set if the collection is bounded.
      *
-     * @param apiProperty must be a representation of {@Schema}
-     * @param targetClass used to obtain {@link CPropertyInfo} with the given propertyName
+     * @param apiProperty  must be a representation of {@Schema}
+     * @param targetClass  used to obtain {@link CPropertyInfo} with the given propertyName
      * @param propertyName
      */
     private void addArrayProperties(JAnnotationUse apiProperty, CClassInfo targetClass, String propertyName) {
@@ -249,25 +255,38 @@ public class OpenApiProcessUtil extends AbstractProcessUtil {
     private void addExtremum(JAnnotationUse apiProperty, XSSimpleType xsSimpleType, boolean isMaximum) {
         String extremum =
                 getFacetAsString(xsSimpleType, isMaximum ? XSFacet.FACET_MAXEXCLUSIVE : XSFacet.FACET_MINEXCLUSIVE);
-        Boolean exlusive = true;
-        if (extremum == null) {
-            exlusive = false;
-            extremum =
-                    getFacetAsString(xsSimpleType, isMaximum ? XSFacet.FACET_MAXINCLUSIVE : XSFacet.FACET_MININCLUSIVE);
-        }
-        if (extremum != null) {
-            apiProperty.param(isMaximum ? SchemaFields.MAXIMUM : SchemaFields.MINIMUM, extremum);
-            apiProperty.param(isMaximum ? SchemaFields.EXCLUSIVE_MAXIMUM : SchemaFields.EXCLUSIVE_MINIMUM, exlusive);
+        try {
+            Boolean exlusive = true;
+            if (extremum == null) {
+                exlusive = false;
+                extremum =
+                        getFacetAsString(xsSimpleType,
+                                isMaximum ? XSFacet.FACET_MAXINCLUSIVE : XSFacet.FACET_MININCLUSIVE);
+            }
+            if (extremum != null) {
+                BigDecimal value = new BigDecimal(extremum);
+                apiProperty.param(isMaximum ? SchemaFields.MAXIMUM : SchemaFields.MINIMUM, extremum);
+                apiProperty
+                        .param(isMaximum ? SchemaFields.EXCLUSIVE_MAXIMUM : SchemaFields.EXCLUSIVE_MINIMUM, exlusive);
+            }
+        } catch (NumberFormatException e) {
+            log.warning(String
+                    .format("Extremum: [%s] could not be set for SimpleType:[%s], since it cannot be parsed as BigDecimal!", extremum, xsSimpleType));
         }
     }
 
     private Integer getFacetAsInteger(XSSimpleType xsSimpleType, String facetName) {
         String stringValue = getFacetAsString(xsSimpleType, facetName);
-        try {
-            return Integer.valueOf(stringValue);
-        } catch (NumberFormatException e) {
-            return null;
+        if (stringValue != null) {
+            try {
+                return Integer.valueOf(stringValue);
+            } catch (NumberFormatException e) {
+                log.warning(String
+                        .format("Could not obtain facet : [%s]=[%s] as Integer from SimpleType:[%s]!", facetName, stringValue, xsSimpleType));
+                return null;
+            }
         }
+        return null;
     }
 
     private String getFacetAsString(XSSimpleType xsSimpleType, String facetName) {
