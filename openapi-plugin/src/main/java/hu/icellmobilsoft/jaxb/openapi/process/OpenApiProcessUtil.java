@@ -25,16 +25,19 @@ import java.util.Collection;
 import java.util.List;
 import java.util.logging.Logger;
 
-import be.redlab.jaxb.swagger.XJCHelper;
-import be.redlab.jaxb.swagger.process.AbstractProcessUtil;
+import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+
 import com.sun.codemodel.JAnnotatable;
 import com.sun.codemodel.JAnnotationArrayMember;
 import com.sun.codemodel.JAnnotationUse;
 import com.sun.codemodel.JDefinedClass;
 import com.sun.codemodel.JFieldVar;
 import com.sun.codemodel.JMethod;
+import com.sun.codemodel.JType;
 import com.sun.tools.xjc.model.CClassInfo;
 import com.sun.tools.xjc.model.CPropertyInfo;
+import com.sun.tools.xjc.model.CTypeInfo;
 import com.sun.tools.xjc.outline.EnumConstantOutline;
 import com.sun.tools.xjc.outline.EnumOutline;
 import com.sun.tools.xjc.reader.xmlschema.bindinfo.BindInfo;
@@ -44,9 +47,11 @@ import com.sun.xml.xsom.XSFacet;
 import com.sun.xml.xsom.XSParticle;
 import com.sun.xml.xsom.XSSimpleType;
 import com.sun.xml.xsom.XSTerm;
+
+import be.redlab.jaxb.swagger.XJCHelper;
+import be.redlab.jaxb.swagger.process.AbstractProcessUtil;
+
 import hu.icellmobilsoft.jaxb.openapi.constants.SchemaFields;
-import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
-import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 /**
  * ProcessUtil used for annotating classes with OpenApi {@link Schema}
@@ -84,7 +89,8 @@ public class OpenApiProcessUtil extends AbstractProcessUtil {
      * @param defaultValue
      * @param enums
      */
-    public void addAnnotationForMethod(JDefinedClass implClass, CClassInfo targetClass, JMethod method, boolean required, String defaultValue, Collection<EnumOutline> enums) {
+    public void addAnnotationForMethod(JDefinedClass implClass, CClassInfo targetClass, JMethod method, boolean required, String defaultValue,
+            Collection<EnumOutline> enums) {
         JFieldVar field = super.getCorrespondingField(implClass, method.name());
         if (field != null) {
             internalAddFieldAnnotation(implClass, targetClass, field, required, defaultValue, enums);
@@ -96,7 +102,7 @@ public class OpenApiProcessUtil extends AbstractProcessUtil {
      *
      * @param annotatable
      * @return true if annotable is not annotated with {@link Schema} <br>
-     * false otherwise
+     *         false otherwise
      */
     @Override
     public boolean isAnnotationNotPresent(JAnnotatable annotatable) {
@@ -117,16 +123,16 @@ public class OpenApiProcessUtil extends AbstractProcessUtil {
      * @param defaultValue
      * @param enums
      */
-    protected void internalAddFieldAnnotation(final JDefinedClass implClass, CClassInfo targetClass, final JFieldVar field,
-                                              final boolean required,
-                                              final String defaultValue, final Collection<EnumOutline> enums) {
+    protected void internalAddFieldAnnotation(final JDefinedClass implClass, CClassInfo targetClass, final JFieldVar field, final boolean required,
+            final String defaultValue, final Collection<EnumOutline> enums) {
         JAnnotationUse apiProperty = field.annotate(Schema.class);
         String name = field.name();
         apiProperty.param(SchemaFields.NAME, name);
         apiProperty.param(SchemaFields.TITLE, name);
         addArrayProperties(apiProperty, targetClass, name);
         String description = getDescription(targetClass, name);
-        EnumOutline eo = getKnownEnum(field.type().fullName(), enums);
+        String className = getClassName(targetClass, field, name);
+        EnumOutline eo = getKnownEnum(className, enums);
         if (null != eo) {
             addEnumeration(apiProperty, eo);
             String enumConstants = getEnumConstantDescription(eo);
@@ -144,8 +150,7 @@ public class OpenApiProcessUtil extends AbstractProcessUtil {
     }
 
     /**
-     * Some OpenAPI implementations does not include {@link Schema#enumeration()} into openapi yaml,
-     * therefore this creates a CommonMark syntax string
+     * Some OpenAPI implementations does not include {@link Schema#enumeration()} into openapi yaml, therefore this creates a CommonMark syntax string
      * containing the list of enum constants extended with their respective <xs:documentation>
      *
      * @param eo
@@ -156,14 +161,14 @@ public class OpenApiProcessUtil extends AbstractProcessUtil {
         List<EnumConstantOutline> constants = eo.constants;
         if (constants != null && !constants.isEmpty()) {
             constantDescription.append(ENUMERATION_VALUES);
-            int classNameLength = eo.clazz.fullName().length() + 1;
             for (EnumConstantOutline eco : constants) {
                 constantDescription.append("* ");
-                String enumName = eco.constRef.getName().substring(classNameLength);
+                // gets the actual lexical value defined in the xsd instead of the enum name, since it can be escaped in java (ie. xsd: example.test
+                // vs java enum:EXAMPLE_TEST)
+                String enumName = eco.target.getLexicalValue();
                 constantDescription.append("**").append(enumName).append("**");
-                if (eco.target.getSchemaComponent() != null &&
-                    eco.target.getSchemaComponent().getAnnotation() != null &&
-                    eco.target.getSchemaComponent().getAnnotation().getAnnotation() != null) {
+                if (eco.target.getSchemaComponent() != null && eco.target.getSchemaComponent().getAnnotation() != null
+                        && eco.target.getSchemaComponent().getAnnotation().getAnnotation() != null) {
                     Object annotationObj = eco.target.getSchemaComponent().getAnnotation().getAnnotation();
                     if (annotationObj != null && annotationObj instanceof BindInfo) {
                         String enumDocumentation = ((BindInfo) annotationObj).getDocumentation();
@@ -181,27 +186,52 @@ public class OpenApiProcessUtil extends AbstractProcessUtil {
     /**
      * Fills apiProperty with the constants provided by eo ({@link EnumOutline#constants}).
      *
-     * @param apiProperty must be a representation of {@Schema}, constants will be placed into {@link Schema#enumeration()}
+     * @param apiProperty
+     *            must be a representation of {@Schema}, constants will be placed into {@link Schema#enumeration()}
      * @param eo
      */
-    private void addEnumeration(JAnnotationUse apiProperty, EnumOutline eo) {
-        List<EnumConstantOutline> constants = eo.constants;
-        if (constants != null && !constants.isEmpty()) {
-            JAnnotationArrayMember paramArray = apiProperty.paramArray(SchemaFields.ENUMERATION);
-            int classNameLength = eo.clazz.fullName().length() + 1;
-            for (EnumConstantOutline eco : constants) {
-                String enumName = eco.constRef.getName().substring(classNameLength);
-                paramArray.param(enumName);
+    public static void addEnumeration(JAnnotationUse apiProperty, EnumOutline eo) {
+        if (apiProperty != null && eo != null) {
+            List<EnumConstantOutline> constants = eo.constants;
+            if (constants != null && !constants.isEmpty()) {
+                JAnnotationArrayMember paramArray = apiProperty.paramArray(SchemaFields.ENUMERATION);
+                for (EnumConstantOutline eco : constants) {
+                    // gets the actual lexical value defined in the xsd instead of the enum name, since it can be escaped in java (ie. xsd:
+                    // example.test vs java enum:EXAMPLE_TEST)
+                    String enumName = eco.target.getLexicalValue();
+                    paramArray.param(enumName);
+                }
             }
         }
     }
 
+    private String getClassName(CClassInfo targetClass, JFieldVar field, String fieldName) {
+        JType type = field.type();
+        String className = type.fullName();
+        CPropertyInfo property = targetClass.getProperty(fieldName);
+        if (property.isCollection()) {
+            // Collection<Enum<>>
+            Collection<? extends CTypeInfo> refTypes = property.ref();
+            if (refTypes != null && refTypes.size() == 1) {
+                for (CTypeInfo refType : refTypes) {
+                    if (refType.getType() != null) {
+                        className = refType.getType().fullName();
+                    }
+                }
+
+            }
+        }
+        return className;
+    }
+
     /**
-     * Obtains the given property from targetClass using propertyName, if its a collection property {@link Schema#type()} is set to {@link SchemaType#ARRAY},
-     * additionally {@link Schema#maxItems()}, {@link Schema#minItems()} is set if the collection is bounded.
+     * Obtains the given property from targetClass using propertyName, if its a collection property {@link Schema#type()} is set to
+     * {@link SchemaType#ARRAY}, additionally {@link Schema#maxItems()}, {@link Schema#minItems()} is set if the collection is bounded.
      *
-     * @param apiProperty  must be a representation of {@Schema}
-     * @param targetClass  used to obtain {@link CPropertyInfo} with the given propertyName
+     * @param apiProperty
+     *            must be a representation of {@Schema}
+     * @param targetClass
+     *            used to obtain {@link CPropertyInfo} with the given propertyName
      * @param propertyName
      */
     private void addArrayProperties(JAnnotationUse apiProperty, CClassInfo targetClass, String propertyName) {
@@ -237,8 +267,8 @@ public class OpenApiProcessUtil extends AbstractProcessUtil {
         if (schemaComponent instanceof XSParticle) {
             XSParticle particle = (XSParticle) schemaComponent;
             XSTerm xsTerm = particle.getTerm();
-            if (xsTerm != null && xsTerm instanceof XSElementDecl && ((XSElementDecl) xsTerm).getType() != null &&
-                ((XSElementDecl) xsTerm).getType().asSimpleType() != null) {
+            if (xsTerm != null && xsTerm instanceof XSElementDecl && ((XSElementDecl) xsTerm).getType() != null
+                    && ((XSElementDecl) xsTerm).getType().asSimpleType() != null) {
                 XSSimpleType xsSimpleType = ((XSElementDecl) xsTerm).getType().asSimpleType();
                 addLength(apiProperty, xsSimpleType);
                 addExtremum(apiProperty, xsSimpleType, true);
@@ -272,25 +302,21 @@ public class OpenApiProcessUtil extends AbstractProcessUtil {
     }
 
     private void addExtremum(JAnnotationUse apiProperty, XSSimpleType xsSimpleType, boolean isMaximum) {
-        String extremum =
-                getFacetAsString(xsSimpleType, isMaximum ? XSFacet.FACET_MAXEXCLUSIVE : XSFacet.FACET_MINEXCLUSIVE);
+        String extremum = getFacetAsString(xsSimpleType, isMaximum ? XSFacet.FACET_MAXEXCLUSIVE : XSFacet.FACET_MINEXCLUSIVE);
         try {
             Boolean exlusive = true;
             if (extremum == null) {
                 exlusive = false;
-                extremum =
-                        getFacetAsString(xsSimpleType,
-                                isMaximum ? XSFacet.FACET_MAXINCLUSIVE : XSFacet.FACET_MININCLUSIVE);
+                extremum = getFacetAsString(xsSimpleType, isMaximum ? XSFacet.FACET_MAXINCLUSIVE : XSFacet.FACET_MININCLUSIVE);
             }
             if (extremum != null) {
                 BigDecimal value = new BigDecimal(extremum);
                 apiProperty.param(isMaximum ? SchemaFields.MAXIMUM : SchemaFields.MINIMUM, extremum);
-                apiProperty
-                        .param(isMaximum ? SchemaFields.EXCLUSIVE_MAXIMUM : SchemaFields.EXCLUSIVE_MINIMUM, exlusive);
+                apiProperty.param(isMaximum ? SchemaFields.EXCLUSIVE_MAXIMUM : SchemaFields.EXCLUSIVE_MINIMUM, exlusive);
             }
         } catch (NumberFormatException e) {
-            log.warning(String
-                    .format("Extremum: [%s] could not be set for SimpleType:[%s], since it cannot be parsed as BigDecimal!", extremum, xsSimpleType));
+            log.warning(String.format("Extremum: [%s] could not be set for SimpleType:[%s], since it cannot be parsed as BigDecimal!", extremum,
+                    xsSimpleType));
         }
     }
 
@@ -300,8 +326,8 @@ public class OpenApiProcessUtil extends AbstractProcessUtil {
             try {
                 return Integer.valueOf(stringValue);
             } catch (NumberFormatException e) {
-                log.warning(String
-                        .format("Could not obtain facet : [%s]=[%s] as Integer from SimpleType:[%s]!", facetName, stringValue, xsSimpleType));
+                log.warning(
+                        String.format("Could not obtain facet : [%s]=[%s] as Integer from SimpleType:[%s]!", facetName, stringValue, xsSimpleType));
                 return null;
             }
         }
