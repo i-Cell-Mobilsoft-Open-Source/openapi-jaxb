@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>hu.icellmobilsoft.jaxb</groupId>
 	<artifactId>openapi-jaxb</artifactId>
-	<version>1.1.0</version>
+	<version>1.1.1-SNAPSHOT</version>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -33,7 +33,7 @@
 		<connection>scm:git:git@github.com:icellmobilsoft/openapi-jaxb.git</connection>
 		<developerConnection>scm:git:git@github.com:icellmobilsoft/openapi-jaxb.git</developerConnection>
 		<url>https://github.com/icellmobilsoft/openapi-jaxb.git</url>
-		<tag>openapi-jaxb-1.1.0</tag>
+		<tag>HEAD</tag>
 	</scm>
 	<name>OpenAPI JAXB</name>
 	<description>XJC Plugin to add OpenAPI Annotations to your openapi generated JAXB classes, see github for info</description>
