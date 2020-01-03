@@ -25,7 +25,7 @@ The plugin is activated with the `-openapify` argument.
             <plugin> // <2>
 				<groupId>hu.icellmobilsoft.jaxb</groupId>
 				<artifactId>openapi-jaxb</artifactId>
-				<version>1.0.0</version>
+				<version>1.1.0</version>
             </plugin>
 
         </plugins>
