@@ -43,7 +43,11 @@ public class OpenApiProcessStrategyFactory {
     }
 
     public static ProcessStrategy getProcessStrategy(final XmlAccessType access) {
-        OpenApiProcessUtil processUtil = OpenApiProcessUtil.getInstance();
+        return getProcessStrategy(access, false);
+    }
+
+    public static ProcessStrategy getProcessStrategy(XmlAccessType access, boolean verboseDescriptions) {
+        OpenApiProcessUtil processUtil = OpenApiProcessUtil.getInstance(verboseDescriptions);
         switch (access) {
             case FIELD:
                 return null == fieldProcessor ? fieldProcessor = new FieldProcessStrategy(processUtil) : fieldProcessor;

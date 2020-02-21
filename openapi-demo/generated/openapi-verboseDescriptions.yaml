@@ -50,7 +50,8 @@ components:
       properties:
         someString:
           title: someString
-          description: String value restricted (elementDoc)
+          description: "String value restricted (elementDoc)\n\nRestrictions: \n*\
+            \ maxLength: 50\n* minLength: 10\n* pattern: .*[^\\s].*"
           maxLength: 50
           minLength: 10
           pattern: .*[^\s].*
@@ -59,14 +60,17 @@ components:
           allOf:
           - $ref: '#/components/schemas/EnumeratedType'
           - title: someEnum
-            description: String value restricted (elementDoc)
+            description: "String value restricted (elementDoc)\n\nRestrictions: \n\
+              * Enum: \n  * **ABC** - ABC enum\n  * **XYZ** - XYZ enum"
             enum:
             - ABC
             - XYZ
         someInt:
           format: int32
           title: someInt
-          description: integer greater than 4, less than or equal to 10 (elementDoc)
+          description: "integer greater than 4, less than or equal to 10 (elementDoc)\n\
+            \nRestrictions: \n* maximum: 10\n* exclusiveMaximum: false\n* minimum:\
+            \ 4\n* exclusiveMinimum: true"
           maximum: 10
           exclusiveMaximum: false
           minimum: 4
@@ -93,7 +97,8 @@ components:
       properties:
         property:
           title: property
-          description: property
+          description: "property\n\nRestrictions: \n* maxLength: 50\n* minLength:\
+            \ 10\n* pattern: .*[^\\s].*"
           maxLength: 50
           minLength: 10
           pattern: .*[^\s].*

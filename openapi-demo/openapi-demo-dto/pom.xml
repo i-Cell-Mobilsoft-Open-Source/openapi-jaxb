@@ -39,12 +39,13 @@
                     <generateDirectory>${project.build.directory}/generated-sources/src/main/java</generateDirectory>
                     <args>
                         <arguments>-openapify</arguments>
+                        <arguments>-openapify:verboseDescriptions</arguments>
                     </args>
                     <plugins>
                         <plugin>
                             <groupId>hu.icellmobilsoft.jaxb</groupId>
                             <artifactId>openapi-jaxb</artifactId>
-                            <version>1.1.0</version>
+                            <version>1.1.1-SNAPSHOT</version>
                         </plugin>
                     </plugins>
                 </configuration>
