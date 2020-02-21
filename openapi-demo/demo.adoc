@@ -18,11 +18,23 @@ include::openapi-demo-service/demo-service.adoc[leveloffset=2]
 After startup the OpenApi yaml is available under `localhost:8080/openapi`.
 
 == Generated examples
+
+=== Normal run
 ifndef::readme[]
 * link:generated/openapi.yaml[OpenAPI 3.0 YAML]
-* link:generated/redoc-static.html[HTML generated from OpenAPI yaml with redoc]
+* link:generated/openapi.html[HTML generated from OpenAPI yaml with redoc]
 endif::readme[]
 ifdef::readme[]
 * link:openapi-demo/generated/openapi.yaml[OpenAPI 3.0 YAML]
-* link:openapi-demo/generated/redoc-static.html[HTML generated from OpenAPI yaml with redoc]
+* link:openapi-demo/generated/openapi.html[HTML generated from OpenAPI yaml with redoc]
+endif::readme[]
+
+=== With verboseDescriptions switch
+ifndef::readme[]
+* link:generated/openapi-verboseDescriptions.yaml[OpenAPI 3.0 YAML (verboseDescriptions)]
+* link:generated/openapi-verboseDescriptions.html[HTML generated from OpenAPI yaml with redoc (verboseDescriptions)]
+endif::readme[]
+ifdef::readme[]
+* link:openapi-demo/generated/openapi-verboseDescriptions.yaml[OpenAPI 3.0 YAML (verboseDescriptions)]
+* link:openapi-demo/generated/openapi-verboseDescriptions.html[HTML generated from OpenAPI yaml with redoc (verboseDescriptions]
 endif::readme[]
