@@ -13,7 +13,7 @@
 
 openapi-jaxb plugin and demo application
 
-=== Maven central
+== Maven central
 This project is available in maven central as:
 [source, xml]
 ----

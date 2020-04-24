@@ -13,7 +13,7 @@
 
 openapi-jaxb plugin and demo application
 
-=== Maven central
+== Maven central
 This project is available in maven central as:
 [source, xml]
 ----
@@ -50,10 +50,12 @@ The original Swagger compatible genearation is still available with providing th
 = OpenAPI generation
 
 == Usage
+
 The plugin is activated with the `-openapify` argument.
 
 === Use with org.jvnet.jaxb2.maven2:maven-jaxb2-plugin maven plugin
-[source, xml]
+
+[source,xml]
 ----
 ...
 <plugin>
@@ -103,7 +105,8 @@ NOTE: The `-swaggerify` argument is still available, both arguments can be provi
 IMPORTANT: In order to compile the generated sources the `org.eclipse.microprofile.openapi:microprofile-openapi-api`
 artifact should be included as dependency (at least with _provided_ scope)!
 (This artifact contains the OpenApi annotations)
-[source, xml]
+
+[source,xml]
 ----
 <project ...>
 	...
@@ -118,6 +121,7 @@ artifact should be included as dependency (at least with _provided_ scope)!
 ----
 
 == Details
+
 It annotates the classes generated from XSD-s with the `org.eclipse.microprofile.openapi.annotations.media.Schema` annotation.
 
 === XSD Mapping
@@ -155,18 +159,54 @@ It annotates the classes generated from XSD-s with the `org.eclipse.microprofile
 |`//simpleType/restriction[@base="xs:string"]/enumeration[n]/@value`|`Schema.enumeration[n]`
 |===
 
-=== Enum handing
+=== Verbose description
 
-Some openAPI implementations doesn't process the `Schema.enumeration`-s properly,
-furthermore the `<xsd:documentation>`-s provided on the enumeration constants are not generated into the openAPI yaml.
-Because of these the `description` property is extended for enums with the list of possible values and their respective documentation (if any).
+Some xsd restrictions can not be included into OpenAPI schema definitions, and some OpenAPI implementations doesn't process the `Schema.enumeration`-s properly (or other parameters), furthermore the `<xsd:documentation>`-s provided on the enumeration constants are not generated into the openAPI yaml.
+Because of these the plugin can be run with the `verboseDescriptions` flag in order to extended the `description` property with a list of restriction or for enums with the list of possible values and their respective documentation (if any).
 
-==== Example
+==== Setting verbose description with maven-jaxb2-plugin maven plugin
 
-===== xsd
-[source, xml]
+[source,xml]
 ----
-<xs:simpleType name="OperationType">
+...
+<plugin>
+    <groupId>org.jvnet.jaxb2.maven2</groupId>
+    <artifactId>maven-jaxb2-plugin</artifactId>
+    <version>0.13.3</version>
+    ...
+    <configuration>
+        <schemaDirectory>src/main/resources</schemaDirectory>
+        <schemaIncludes>
+            <include>xsd/hu/icellmobilsoft/icon/dto/super.xsd</include>
+        </schemaIncludes>
+        <generateDirectory>${project.build.directory}/generated-sources/src/main/java</generateDirectory>
+        <args>
+			<arguments>-openapify</arguments> // <1>
+			<arguments>-openapify:verboseDescriptions</arguments> // <2>
+        </args>
+        <plugins>
+            <plugin>
+				<groupId>hu.icellmobilsoft.jaxb</groupId>
+				<artifactId>openapi-jaxb</artifactId>
+				<version>1.1.0</version>
+            </plugin>
+
+        </plugins>
+    </configuration>
+</plugin>
+----
+<1> activate the plugin with adding `<arguments>-openapify</arguments>` to `//plugin/configuration/args`.
+<2> activate verboseDescription with adding `<arguments>-openapify:verboseDescriptions</arguments>` to `//plugin/configuration/args`.
+
+==== Examples
+
+===== enumeration
+
+====== xsd
+
+[source,xml]
+----
+    <xs:simpleType name="OperationType">
 		<xs:annotation>
 			<xs:documentation xml:lang="en">Operation type</xs:documentation>
 		</xs:annotation>
@@ -185,30 +225,75 @@ Because of these the `description` property is extended for enums with the list 
 	</xs:simpleType>
 ----
 
-===== Description
+====== Description
+
 [source,markdown]
 ----
 Operation type
-* **CREATE** - Creation exchange
-* **MODIFY** - Modification exchange
+
+Restrictions:
+* Enum:
+  * **CREATE** - Creation exchange
+  * **MODIFY** - Modification exchange
 ----
 
-===== Rendered
+====== Rendered
 
 [.lead]
 Operation type
 
-* **CREATE** - Creation exchange
-* **MODIFY** - Modification exchange
+Restrictions:
+
+* Enum:
+** **CREATE** - Creation exchange
+** **MODIFY** - Modification exchange
+
+===== restricted type
+
+====== xsd
+
+[source,xml]
+----
+    <xsd:simpleType name="DateType">
+        <xsd:restriction base="xsd:date">
+            <xsd:minInclusive value="2010-01-01"/>
+            <xsd:pattern value="\d{4}-\d{2}-\d{2}"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+----
+
+====== Description
+
+[source,markdown]
+----
+DateType
+
+Restrictions:
+* minimum: 2010-01-01
+* exclusiveMinimum: false
+* pattern: \d{4}-\d{2}-\d{2}
+----
+
+====== Rendered
+
+[.lead]
+DateType
+
+Restrictions:
+
+* minimum: 2010-01-01
+* exclusiveMinimum: false
+* pattern: \d{4}-\d{2}-\d{2}
 
 === Issues
+
 Known limitations:
 
 * When multiple `documentation` is defined under `//annotation` (ie. multi-language documentation), then only the last one will be processed.
 +
 ie. from the following xsd only the `text` will be displayed as description
 +
-[source, xml]
+[source,xml]
 ----
 <xs:annotation>
     <xs:documentation xml:lang="hu">szöveg</xs:documentation>
@@ -230,7 +315,7 @@ link:openapi-demo[openapi-demo]
 :leveloffset: 1
 
 = OpenApi POC
-:demoVersion: 1.0.0-SNAPSHOT
+:demoVersion: 1.1.1-SNAPSHOT
 :thorntailJar: openapi-demo-service/target/openapi-demo-service-{demoVersion}-thorntail.jar
 
 POC application for openApi plugin
@@ -269,7 +354,13 @@ Since `io.thorntail:microprofile-openapi` is bundled, the OpenAPI 3 yaml is avai
 After startup the OpenApi yaml is available under `localhost:8080/openapi`.
 
 == Generated examples
+
+=== Normal run
 * link:openapi-demo/generated/openapi.yaml[OpenAPI 3.0 YAML]
-* link:openapi-demo/generated/redoc-static.html[HTML generated from OpenAPI yaml with redoc]
+* link:openapi-demo/generated/openapi.html[HTML generated from OpenAPI yaml with redoc]
+
+=== With verboseDescriptions switch
+* link:openapi-demo/generated/openapi-verboseDescriptions.yaml[OpenAPI 3.0 YAML (verboseDescriptions)]
+* link:openapi-demo/generated/openapi-verboseDescriptions.html[HTML generated from OpenAPI yaml with redoc (verboseDescriptions]
 
 :leveloffset!:

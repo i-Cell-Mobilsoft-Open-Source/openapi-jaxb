@@ -19,6 +19,7 @@
  */
 package hu.icellmobilsoft.jaxb.openapi;
 
+import java.io.IOException;
 import java.util.Collection;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -27,6 +28,8 @@ import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 import com.sun.codemodel.JAnnotationUse;
+import com.sun.tools.xjc.BadCommandLineException;
+import com.sun.tools.xjc.Options;
 import com.sun.tools.xjc.outline.ClassOutline;
 import com.sun.tools.xjc.outline.EnumOutline;
 
@@ -42,7 +45,10 @@ import hu.icellmobilsoft.jaxb.openapi.process.OpenApiProcessUtil;
 public class OpenApiAnnotationsJaxbPlugin extends SwaggerAnnotationsJaxbPlugin {
 
     private static final String OPENAPIFY = "openapify";
+    private static final String VERBOSE_DESCRIPTIONS = OPENAPIFY + ":verboseDescriptions";
     private static final String USAGE = "Add this plugin to the JAXB classes generator classpath and provide the argument '-" + OPENAPIFY + "'.";
+
+    private boolean verboseDescriptions = false;
 
     /**
      * The option name to activate OpenApi annotations.
@@ -62,6 +68,18 @@ public class OpenApiAnnotationsJaxbPlugin extends SwaggerAnnotationsJaxbPlugin {
     @Override
     public String getUsage() {
         return USAGE;
+    }
+
+    @Override
+    public int parseArgument(Options opt, String[] args, int i) throws BadCommandLineException, IOException {
+        int consumed = super.parseArgument(opt, args, i);
+        String arg = args[i];
+        int indexOfVerboseDescriptions = arg.indexOf(VERBOSE_DESCRIPTIONS);
+        if (indexOfVerboseDescriptions > 0) {
+            verboseDescriptions = true;
+            consumed++;
+        }
+        return consumed;
     }
 
     /**
@@ -98,7 +116,7 @@ public class OpenApiAnnotationsJaxbPlugin extends SwaggerAnnotationsJaxbPlugin {
 
     @Override
     protected ProcessStrategy getProcessStrategy(XmlAccessType access) {
-        return OpenApiProcessStrategyFactory.getProcessStrategy(access);
+        return OpenApiProcessStrategyFactory.getProcessStrategy(access, verboseDescriptions);
     }
 
 }
