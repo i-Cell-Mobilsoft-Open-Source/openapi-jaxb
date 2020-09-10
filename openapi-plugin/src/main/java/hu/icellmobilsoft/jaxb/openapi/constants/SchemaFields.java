@@ -108,4 +108,8 @@ public class SchemaFields {
      */
     public static final String PATTERN = "pattern";
 
+    /**
+     * Constant for {@link Schema#hidden()}
+     */
+    public static final String HIDDEN = "hidden";
 }

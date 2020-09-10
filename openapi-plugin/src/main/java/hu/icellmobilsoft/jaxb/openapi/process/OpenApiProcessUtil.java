@@ -69,6 +69,7 @@ public class OpenApiProcessUtil extends AbstractProcessUtil {
     private static final String COLON_MARK = ": ";
     private static final String ENUM = "Enum";
     private static final String RESTRICTIONS = "Restrictions";
+    private static final String IS_SET_METHOD_PREFIX = "isSet";
     private Logger log = Logger.getLogger(OpenApiProcessUtil.class.getName());
 
     private final boolean verboseDescriptions;
@@ -105,9 +106,17 @@ public class OpenApiProcessUtil extends AbstractProcessUtil {
      */
     public void addAnnotationForMethod(JDefinedClass implClass, CClassInfo targetClass, JMethod method, boolean required, String defaultValue,
             Collection<EnumOutline> enums) {
-        JFieldVar field = super.getCorrespondingField(implClass, method.name());
-        if (field != null) {
-            internalAddFieldAnnotation(implClass, targetClass, field, required, defaultValue, enums);
+        // Make isSet* methods hidden
+        if (method.name().startsWith(IS_SET_METHOD_PREFIX)) {
+            JAnnotationUse apiProperty = method.annotate(Schema.class);
+            apiProperty.param(SchemaFields.HIDDEN, true);
+            return;
+        }
+        if (required) {
+            JFieldVar field = super.getCorrespondingField(implClass, method.name());
+            if (field != null) {
+                internalAddFieldAnnotation(implClass, targetClass, field, required, defaultValue, enums);
+            }
         }
     }
 
