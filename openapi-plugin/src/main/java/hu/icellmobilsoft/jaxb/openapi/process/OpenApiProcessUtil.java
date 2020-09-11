@@ -106,6 +106,9 @@ public class OpenApiProcessUtil extends AbstractProcessUtil {
      */
     public void addAnnotationForMethod(JDefinedClass implClass, CClassInfo targetClass, JMethod method, boolean required, String defaultValue,
             Collection<EnumOutline> enums) {
+        if (method == null) {
+            return;
+        }
         // Make isSet* methods hidden
         if (method.name().startsWith(IS_SET_METHOD_PREFIX)) {
             JAnnotationUse apiProperty = method.annotate(Schema.class);
