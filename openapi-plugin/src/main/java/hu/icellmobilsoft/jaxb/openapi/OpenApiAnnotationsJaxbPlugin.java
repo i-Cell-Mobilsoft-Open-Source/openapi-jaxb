@@ -25,9 +25,7 @@ import java.util.Collection;
 import javax.xml.bind.annotation.XmlAccessType;
 
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
-import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
-import com.sun.codemodel.JAnnotationUse;
 import com.sun.tools.xjc.BadCommandLineException;
 import com.sun.tools.xjc.Options;
 import com.sun.tools.xjc.outline.ClassOutline;
@@ -36,8 +34,8 @@ import com.sun.tools.xjc.outline.EnumOutline;
 import be.redlab.jaxb.swagger.ProcessStrategy;
 import be.redlab.jaxb.swagger.SwaggerAnnotationsJaxbPlugin;
 
-import hu.icellmobilsoft.jaxb.openapi.constants.SchemaFields;
 import hu.icellmobilsoft.jaxb.openapi.process.OpenApiProcessUtil;
+import hu.icellmobilsoft.jaxb.openapi.process.SchemaHolder;
 
 /**
  * @author mark.petrenyi
@@ -92,9 +90,10 @@ public class OpenApiAnnotationsJaxbPlugin extends SwaggerAnnotationsJaxbPlugin {
         super.processEnums(enums);
         for (EnumOutline eo : enums) {
             if (eo.clazz != null) {
-                JAnnotationUse apiProperty = eo.clazz.annotate(Schema.class);
-                apiProperty.param(SchemaFields.TYPE, SchemaType.STRING);
-                OpenApiProcessUtil.addEnumeration(apiProperty, eo);
+                SchemaHolder schema = new SchemaHolder();
+                schema.setType(SchemaType.STRING);
+                OpenApiProcessUtil.addEnumeration(schema, eo);
+                schema.annotate(eo.clazz);
             }
         }
     }
@@ -107,11 +106,12 @@ public class OpenApiAnnotationsJaxbPlugin extends SwaggerAnnotationsJaxbPlugin {
      */
     @Override
     protected void addClassAnnotation(final ClassOutline o) {
-        JAnnotationUse apiClass = o.implClass.annotate(Schema.class);
+        SchemaHolder schemaHolder = new SchemaHolder();
         String value = o.target.isElement() ? o.target.getElementName().getLocalPart() : o.ref.name();
-        apiClass.param(SchemaFields.NAME, value);
+        schemaHolder.setName(value);
         String documentation = getDocumentation(o);
-        apiClass.param(SchemaFields.DESCRIPTION, (documentation != null) ? documentation : o.ref.fullName());
+        schemaHolder.setDescription((documentation != null) ? documentation : o.ref.fullName());
+        schemaHolder.annotate(o.implClass);
     }
 
     @Override
