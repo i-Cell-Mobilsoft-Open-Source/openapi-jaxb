@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xs:schema xmlns:jaxb="http://java.sun.com/xml/ns/jaxb" xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" xmlns="http://sample.dto.openapi.icellmobilsoft.hu/sample" xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://sample.dto.openapi.icellmobilsoft.hu/sample" elementFormDefault="qualified" attributeFormDefault="unqualified" jaxb:version="2.0" jaxb:extensionBindingPrefixes="xjc">
+    <xs:annotation>
+        <xs:appinfo>
+            <jaxb:globalBindings generateIsSetMethod="true"/>
+        </xs:appinfo>
+    </xs:annotation>
     <xs:simpleType name="RestrictedString">
         <xs:annotation>
             <xs:documentation xml:lang="en">String from 10 to 50 characters (typeDoc)</xs:documentation>
