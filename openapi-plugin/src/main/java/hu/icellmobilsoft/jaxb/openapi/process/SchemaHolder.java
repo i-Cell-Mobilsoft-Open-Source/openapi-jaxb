@@ -45,6 +45,12 @@ public class SchemaHolder {
 
     // private ExternalDocumentation externalDocs;
 
+    /**
+     * Annotate with {@link Schema} annotation using the SchemaHolder's parameters
+     *
+     * @param annotatable
+     *            the annotatable (class, field, method, etc...)
+     */
     public void annotate(JAnnotatable annotatable) {
         if (annotatable == null) {
             return;
