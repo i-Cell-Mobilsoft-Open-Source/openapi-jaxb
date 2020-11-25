@@ -7,9 +7,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.Collection;
 
 import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.namespace.QName;
 
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 
@@ -111,7 +112,18 @@ public class OpenApiAnnotationsJaxbPlugin extends SwaggerAnnotationsJaxbPlugin {
         schemaHolder.setName(value);
         String documentation = getDocumentation(o);
         schemaHolder.setDescription((documentation != null) ? documentation : o.ref.fullName());
+        OpenApiProcessUtil.addNameSpaceAsExternalDocumentation(schemaHolder, getQName(o));
         schemaHolder.annotate(o.implClass);
+    }
+
+    private QName getQName(ClassOutline o) {
+        if (o.target.isElement()) {
+            return o.target.getElementName();
+        }
+        if (o.target.getTypeName() != null) {
+            return o.target.getTypeName();
+        }
+        return null;
     }
 
     @Override

@@ -21,6 +21,9 @@ package hu.icellmobilsoft.jaxb.openapi;
 
 import javax.xml.bind.annotation.XmlAccessType;
 
+import hu.icellmobilsoft.jaxb.openapi.process.OpenApiProcessUtil;
+import hu.icellmobilsoft.jaxb.openapi.process.StrictFieldProcessStartegy;
+
 import be.redlab.jaxb.swagger.ProcessStrategy;
 import be.redlab.jaxb.swagger.process.NoProcessStrategy;
 import be.redlab.jaxb.swagger.process.PropertyProcessStrategy;

@@ -31,6 +31,13 @@
                         </goals>
                     </execution>
                 </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.apache.commons</groupId>
+                        <artifactId>commons-lang3</artifactId>
+                        <version>3.9</version>
+                    </dependency>
+                </dependencies>
                 <configuration>
                     <schemaDirectory>src/main/resources</schemaDirectory>
                     <schemaIncludes>
@@ -45,7 +52,7 @@
                         <plugin>
                             <groupId>hu.icellmobilsoft.jaxb</groupId>
                             <artifactId>openapi-jaxb</artifactId>
-                            <version>1.1.1-SNAPSHOT</version>
+                            <version>1.2.0-SNAPSHOT</version>
                         </plugin>
                     </plugins>
                 </configuration>

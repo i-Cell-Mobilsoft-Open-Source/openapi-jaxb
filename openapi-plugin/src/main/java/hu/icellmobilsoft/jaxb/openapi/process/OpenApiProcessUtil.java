@@ -21,14 +21,30 @@ package hu.icellmobilsoft.jaxb.openapi.process;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.util.Base64;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlValue;
+import javax.xml.namespace.QName;
+
+import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
+import com.mifmif.common.regex.Generex;
 import com.sun.codemodel.JAnnotatable;
 import com.sun.codemodel.JDefinedClass;
 import com.sun.codemodel.JFieldVar;
@@ -40,6 +56,8 @@ import com.sun.tools.xjc.model.CTypeInfo;
 import com.sun.tools.xjc.outline.EnumConstantOutline;
 import com.sun.tools.xjc.outline.EnumOutline;
 import com.sun.tools.xjc.reader.xmlschema.bindinfo.BindInfo;
+import com.sun.xml.xsom.XSAttributeDecl;
+import com.sun.xml.xsom.XSAttributeUse;
 import com.sun.xml.xsom.XSComponent;
 import com.sun.xml.xsom.XSElementDecl;
 import com.sun.xml.xsom.XSFacet;
@@ -183,9 +201,135 @@ public class OpenApiProcessUtil extends AbstractProcessUtil {
                     .append(RESTRICTIONS).append(COLON_MARK)//
                     .append(restrictions);
         }
+        if (XJCHelper.getAnnotation(field.annotations(), XmlAttribute.class) != null) {
+            // apiProperty.param(SchemaFields.FORMAT, "attribute");
+            schema.setFormat("attribute");
+        } else if (XJCHelper.getAnnotation(field.annotations(), XmlValue.class) != null) {
+            // apiProperty.param(SchemaFields.HIDDEN, true);
+            schema.setHidden(true);
+        }
 
         schema.setDescription(descriptionBuilder.toString());
+        addExample(schema);
+        addNameSpace(schema, targetClass, name);
         schema.annotate(field);
+
+    }
+
+    private void addExample(SchemaHolder schema) {
+        if (schema.getExample() == null) {
+            String example = null;
+            String pattern = schema.getPattern();
+            if (schema.isSetEnumeration()) {
+                List<String> enumValues = schema.getEnumeration();
+                example = enumValues.get(RandomUtils.nextInt(0, enumValues.size()));
+            } else if (StringUtils.isNotBlank(pattern)) {
+                example = generateStringExample(schema, pattern);
+            } else if (schema.isBase64Binary()) {
+                byte[] bytes = "base64".getBytes(StandardCharsets.UTF_8);
+                example = Base64.getEncoder().encodeToString(bytes);
+            } else {
+                BigDecimal exampleDecimal;
+                BigDecimal minimum = schema.getMinimum();
+                BigDecimal maximum = schema.getMaximum();
+                if (minimum == null && maximum == null) {
+                    return;
+                }
+                int fractionDigits = schema.getFractionDigits() != null ? schema.getFractionDigits() : 0;
+                if (minimum == null) {
+                    if (Boolean.TRUE.equals(schema.getExclusiveMaximum())) {
+                        exampleDecimal = maximum.subtract(BigDecimal.ONE);
+                    } else {
+                        exampleDecimal = maximum;
+                    }
+                } else if (maximum == null) {
+                    if (Boolean.TRUE.equals(schema.getExclusiveMinimum())) {
+                        exampleDecimal = minimum.add(BigDecimal.ONE);
+                    } else {
+                        exampleDecimal = minimum;
+                    }
+                } else {
+                    if (Boolean.TRUE.equals(schema.getExclusiveMinimum())) {
+                        exampleDecimal = maximum.add(minimum).divide(BigDecimal.valueOf(2));
+                    } else {
+                        exampleDecimal = minimum;
+                    }
+
+                }
+                example = exampleDecimal.setScale(fractionDigits, BigDecimal.ROUND_HALF_UP).toString();
+            }
+
+            if (StringUtils.isNotBlank(example)) {
+                schema.setExample(example);
+            }
+        }
+    }
+
+    private String generateStringExample(SchemaHolder schema, String pattern) {
+        try {
+            String example;
+            Generex generex = new Generex(pattern);
+            int minLength = schema.getMinLength() != null ? schema.getMinLength() : 0;
+            int maxLength = schema.getMaxLength() != null ? schema.getMaxLength() : 4000;
+            Pattern compiledPattern = Pattern.compile(pattern);
+            String alphanumeric = RandomStringUtils.randomAlphanumeric(minLength, maxLength);
+            if (compiledPattern.matcher(alphanumeric).matches()) {
+                return alphanumeric;
+            }
+            String alphabetic = RandomStringUtils.randomAlphabetic(minLength, maxLength);
+            if (compiledPattern.matcher(alphabetic).matches()) {
+                return alphabetic;
+            }
+            String email = RandomStringUtils.randomAlphanumeric(2, 5) + "@" + RandomStringUtils.randomAlphanumeric(2, 5) + "."
+                    + RandomStringUtils.randomAlphabetic(2, 3);
+            if (compiledPattern.matcher(email).matches()) {
+                return email;
+            }
+            //// int length = RandomUtils.nextInt(minLength, maxLength + 1);
+            //// StringBuilder builder = new StringBuilder();
+            //// while (builder.length() < length) {
+            //// builder.append("string");
+            //// }
+            // builder.setLength(length);
+            // example = builder.toString();
+            // if (compiledPattern.matcher(example).matches()) {
+            // return example;
+            // }
+            String utcDateTime = OffsetDateTime.now(ZoneOffset.UTC).format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'hh:mm:ss.SSSX"));
+            if (compiledPattern.matcher(utcDateTime).matches()) {
+                return utcDateTime;
+            }
+            String utcDate = OffsetDateTime.now(ZoneOffset.UTC).format(DateTimeFormatter.ISO_OFFSET_DATE);
+            if (compiledPattern.matcher(utcDate).matches()) {
+                return utcDate;
+            }
+            if (schema.getMaxLength() != null) {
+                example = generex.random(minLength, schema.getMaxLength());
+            } else {
+                example = generex.random(minLength);
+            }
+            return example;
+        } catch (Throwable e) {
+            log.warning("Could not generate example for pattern: " + pattern);
+            return null;
+        }
+    }
+
+    protected void addNameSpace(SchemaHolder schema, CClassInfo targetClass, String propertyName) {
+        CPropertyInfo property = targetClass.getProperty(propertyName);
+        Map<QName, CPropertyInfo> table = new HashMap<>();
+        property.collectElementNames(table);
+        Optional<QName> qName = table.keySet().stream().filter(qn -> propertyName.equals(qn.getLocalPart())).findFirst();
+        addNameSpaceAsExternalDocumentation(schema, qName.orElse(null));
+    }
+
+    public static void addNameSpaceAsExternalDocumentation(SchemaHolder schema, QName typeName) {
+        if (typeName != null) {
+            String nameSpace = typeName.getNamespaceURI();
+            String localPart = typeName.getLocalPart();
+            schema.setNamespace(nameSpace);
+            schema.setElementName(localPart);
+        }
     }
 
     /**
@@ -302,17 +446,52 @@ public class OpenApiProcessUtil extends AbstractProcessUtil {
     private void addRestrictions(SchemaHolder schema, CClassInfo targetClass, String propertyName, StringBuilder restrictionBuilder) {
         CPropertyInfo property = targetClass.getProperty(propertyName);
         XSComponent schemaComponent = property.getSchemaComponent();
+        XSSimpleType xsSimpleType = null;
         if (schemaComponent instanceof XSParticle) {
             XSParticle particle = (XSParticle) schemaComponent;
             XSTerm xsTerm = particle.getTerm();
             if (xsTerm != null && xsTerm instanceof XSElementDecl && ((XSElementDecl) xsTerm).getType() != null
                     && ((XSElementDecl) xsTerm).getType().asSimpleType() != null) {
-                XSSimpleType xsSimpleType = ((XSElementDecl) xsTerm).getType().asSimpleType();
+                xsSimpleType = ((XSElementDecl) xsTerm).getType().asSimpleType();
                 addLength(schema, xsSimpleType, restrictionBuilder);
                 addExtremum(schema, xsSimpleType, true, restrictionBuilder);
                 addExtremum(schema, xsSimpleType, false, restrictionBuilder);
                 addPattern(schema, xsSimpleType, restrictionBuilder);
             }
+        } else if (schemaComponent instanceof XSSimpleType) {
+            // Handle value for xs:simpleContent
+            xsSimpleType = (XSSimpleType) schemaComponent;
+        } else if (schemaComponent instanceof XSAttributeUse) {
+            // Handle attributes
+            XSAttributeUse attributeUse = (XSAttributeUse) schemaComponent;
+            XSAttributeDecl attributeDecl = attributeUse.getDecl();
+            if (attributeDecl != null && attributeDecl.getType() != null) {
+                xsSimpleType = attributeDecl.getType();
+            }
+        }
+        if (xsSimpleType != null) {
+            addLength(schema, xsSimpleType, restrictionBuilder);
+            addExtremum(schema, xsSimpleType, true, restrictionBuilder);
+            addExtremum(schema, xsSimpleType, false, restrictionBuilder);
+            addPattern(schema, xsSimpleType, restrictionBuilder);
+            addDigits(schema, xsSimpleType, restrictionBuilder);
+            if ("base64Binary".equals(xsSimpleType.getName())) {
+                schema.setBase64Binary(true);
+            }
+        }
+    }
+
+    private void addDigits(SchemaHolder schema, XSSimpleType xsSimpleType, StringBuilder restrictionBuilder) {
+        Integer totalDigits = getFacetAsInteger(xsSimpleType, XSFacet.FACET_TOTALDIGITS);
+        if (totalDigits != null) {
+            schema.setTotalDigits(totalDigits);
+            appendRestriction(restrictionBuilder, "totalDigits", totalDigits);
+        }
+        Integer fractionDigits = getFacetAsInteger(xsSimpleType, XSFacet.FACET_FRACTIONDIGITS);
+
+        if (fractionDigits != null) {
+            schema.setFractionDigits(fractionDigits);
+            appendRestriction(restrictionBuilder, "fractionDigits", fractionDigits);
         }
     }
 
@@ -366,6 +545,9 @@ public class OpenApiProcessUtil extends AbstractProcessUtil {
             } catch (NumberFormatException e) {
                 log.fine(String.format("Extremum: [%s] could not be set for SimpleType:[%s], since it cannot be parsed as BigDecimal!", extremum,
                         xsSimpleType));
+                if (!exlusive) {
+                    schema.setExample(extremum);
+                }
             }
             appendRestriction(restrictionBuilder, isMaximum ? SchemaFields.MAXIMUM : SchemaFields.MINIMUM, extremum);
             appendRestriction(restrictionBuilder, isMaximum ? SchemaFields.EXCLUSIVE_MAXIMUM : SchemaFields.EXCLUSIVE_MINIMUM, exlusive);

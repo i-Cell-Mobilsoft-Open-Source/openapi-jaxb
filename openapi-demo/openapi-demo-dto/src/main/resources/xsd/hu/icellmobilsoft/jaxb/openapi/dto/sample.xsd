@@ -2,7 +2,9 @@
 <xs:schema xmlns:jaxb="http://java.sun.com/xml/ns/jaxb" xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" xmlns="http://sample.dto.openapi.icellmobilsoft.hu/sample" xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://sample.dto.openapi.icellmobilsoft.hu/sample" elementFormDefault="qualified" attributeFormDefault="unqualified" jaxb:version="2.0" jaxb:extensionBindingPrefixes="xjc">
     <xs:annotation>
         <xs:appinfo>
-            <jaxb:globalBindings generateIsSetMethod="true"/>
+            <jaxb:globalBindings generateIsSetMethod="true">
+                <xjc:serializable uid="1"/>
+            </jaxb:globalBindings>
         </xs:appinfo>
     </xs:annotation>
     <xs:simpleType name="RestrictedString">
@@ -50,10 +52,21 @@
             <xs:element name="property" type="RestrictedString"/>
         </xs:sequence>
     </xs:complexType>
-    <xs:complexType name="SampleType">
+    <xs:complexType name="CryptoType">
         <xs:annotation>
-            <xs:documentation xml:lang="hu">Példa típus (typeDoc)</xs:documentation>
-            <xs:documentation xml:lang="en">Sample type (typeDoc)</xs:documentation>
+            <xs:documentation xml:lang="hu">Kriptográfiai metódust leíró típus</xs:documentation>
+            <xs:documentation xml:lang="hu">Denoting type of cryptographic method</xs:documentation>
+        </xs:annotation>
+        <xs:simpleContent>
+            <xs:extension base="RestrictedString">
+                <xs:attribute name="cryptoType" type="RestrictedString" use="required"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="BaseType">
+        <xs:annotation>
+            <xs:documentation xml:lang="hu">Alap típus (typeDoc)</xs:documentation>
+            <xs:documentation xml:lang="en">Base type (typeDoc)</xs:documentation>
         </xs:annotation>
         <xs:sequence>
             <xs:element name="someString" type="RestrictedString">
@@ -61,21 +74,50 @@
                     <xs:documentation xml:lang="en">String value restricted (elementDoc)</xs:documentation>
                 </xs:annotation>
             </xs:element>
-            <xs:element name="someEnum" type="EnumeratedType">
-                <xs:annotation>
-                    <xs:documentation xml:lang="en">String value restricted (elementDoc)</xs:documentation>
-                </xs:annotation>
-            </xs:element>
-            <xs:element name="someInt" type="RestrictedInt" minOccurs="0">
-                <xs:annotation>
-                    <xs:documentation xml:lang="en">integer greater than 4, less than or equal to 10 (elementDoc)</xs:documentation>
-                </xs:annotation>
-            </xs:element>
-            <xs:element name="someCollection" type="SampleObject" minOccurs="2" maxOccurs="10">
-                <xs:annotation>
-                    <xs:documentation xml:lang="en">SampleObject array, containing 2 to 10 elements (elementDoc)</xs:documentation>
-                </xs:annotation>
-            </xs:element>
         </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="SampleType">
+        <xs:annotation>
+            <xs:documentation xml:lang="hu">Példa típus (typeDoc)</xs:documentation>
+            <xs:documentation xml:lang="en">Sample type (typeDoc)</xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="BaseType">
+                <xs:sequence>
+                    <xs:element name="passwordHash" type="CryptoType">
+                    <xs:annotation>
+                        <xs:documentation xml:lang="en">String value restricted (elementDoc)</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                    <xs:element name="someEnum" type="EnumeratedType">
+                        <xs:annotation>
+                            <xs:documentation xml:lang="en">String value restricted (elementDoc)</xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                    <xs:element name="someInt" type="RestrictedInt" minOccurs="0">
+                        <xs:annotation>
+                            <xs:documentation xml:lang="en">integer greater than 4, less than or equal to 10 (elementDoc)</xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                    <xs:element name="someCollection" type="SampleObject" minOccurs="2" maxOccurs="10">
+                        <xs:annotation>
+                            <xs:documentation xml:lang="en">SampleObject array, containing 2 to 10 elements (elementDoc)</xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                    <xs:element name="someObject" type="SampleObject" minOccurs="0">
+                        <xs:annotation>
+                            <xs:documentation xml:lang="en">SampleObject</xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                    <xs:element name="someBase64" type="xs:base64Binary" minOccurs="0">
+                        <xs:annotation>
+                            <xs:documentation xml:lang="en">Base 64</xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                    <xs:element name="value" type="RestrictedString"/>
+                </xs:sequence>
+                <xs:attribute name="someAttr" type="xs:string"/>
+            </xs:extension>
+        </xs:complexContent>
     </xs:complexType>
 </xs:schema>

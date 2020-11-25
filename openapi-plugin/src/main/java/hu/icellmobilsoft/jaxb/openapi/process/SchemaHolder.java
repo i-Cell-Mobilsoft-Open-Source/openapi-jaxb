@@ -4,13 +4,16 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.microprofile.openapi.annotations.ExternalDocumentation;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
+import org.eclipse.microprofile.openapi.annotations.extensions.Extension;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 import com.sun.codemodel.JAnnotatable;
 import com.sun.codemodel.JAnnotationArrayMember;
 import com.sun.codemodel.JAnnotationUse;
 
+import hu.icellmobilsoft.jaxb.openapi.constants.ExternalDocsFields;
 import hu.icellmobilsoft.jaxb.openapi.constants.SchemaFields;
 
 /**
@@ -43,7 +46,8 @@ public class SchemaHolder {
     private String example;
     private boolean base64Binary;
 
-    // private ExternalDocumentation externalDocs;
+    private String namespace;
+    private String elementName;
 
     /**
      * Annotate with {@link Schema} annotation using the SchemaHolder's parameters
@@ -115,6 +119,19 @@ public class SchemaHolder {
         }
         if (example != null) {
             annotationUse.param(SchemaFields.EXAMPLE, example);
+        }
+
+        if (namespace != null || elementName != null) {
+            JAnnotationUse externalDocs = annotationUse.annotationParam(SchemaFields.EXTERNAL_DOCS, ExternalDocumentation.class);
+            JAnnotationUse extensionNamespace = annotatable.annotate(Extension.class);
+            externalDocs.param(ExternalDocsFields.URL, namespace);
+            extensionNamespace.param("name", "x-xmlNamespace");
+            extensionNamespace.param("value", namespace);
+
+            JAnnotationUse extensionElementName = annotatable.annotate(Extension.class);
+            externalDocs.param(ExternalDocsFields.DESCRIPTION, elementName);
+            extensionElementName.param("name", "x-elementName");
+            extensionElementName.param("value", elementName);
         }
     }
 
@@ -302,5 +319,21 @@ public class SchemaHolder {
 
     public void setBase64Binary(boolean base64Binary) {
         this.base64Binary = base64Binary;
+    }
+
+    public String getNamespace() {
+        return namespace;
+    }
+
+    public void setNamespace(String namespace) {
+        this.namespace = namespace;
+    }
+
+    public String getElementName() {
+        return elementName;
+    }
+
+    public void setElementName(String elementName) {
+        this.elementName = elementName;
     }
 }
