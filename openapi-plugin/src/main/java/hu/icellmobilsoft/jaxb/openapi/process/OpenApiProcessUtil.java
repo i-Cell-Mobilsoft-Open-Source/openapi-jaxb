@@ -30,8 +30,6 @@ import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 import com.sun.codemodel.JAnnotatable;
-import com.sun.codemodel.JAnnotationArrayMember;
-import com.sun.codemodel.JAnnotationUse;
 import com.sun.codemodel.JDefinedClass;
 import com.sun.codemodel.JFieldVar;
 import com.sun.codemodel.JMethod;
@@ -111,8 +109,9 @@ public class OpenApiProcessUtil extends AbstractProcessUtil {
         }
         // Make isSet* methods hidden
         if (method.name().startsWith(IS_SET_METHOD_PREFIX)) {
-            JAnnotationUse apiProperty = method.annotate(Schema.class);
-            apiProperty.param(SchemaFields.HIDDEN, true);
+            SchemaHolder schema = new SchemaHolder();
+            schema.setHidden(true);
+            schema.annotate(method);
             return;
         }
         if (required) {
@@ -155,27 +154,27 @@ public class OpenApiProcessUtil extends AbstractProcessUtil {
      */
     protected void internalAddFieldAnnotation(final JDefinedClass implClass, CClassInfo targetClass, final JFieldVar field, final boolean required,
             final String defaultValue, final Collection<EnumOutline> enums) {
-        JAnnotationUse apiProperty = field.annotate(Schema.class);
         String name = field.name();
-        apiProperty.param(SchemaFields.NAME, name);
-        apiProperty.param(SchemaFields.TITLE, name);
-        addArrayProperties(apiProperty, targetClass, name);
+        SchemaHolder schema = new SchemaHolder();
+        schema.setName(name);
+        schema.setTitle(name);
+        addArrayProperties(schema, targetClass, name);
         String description = getDescription(targetClass, name);
         StringBuilder restrictionBuilder = new StringBuilder();
         String className = getClassName(targetClass, field, name);
         EnumOutline eo = getKnownEnum(className, enums);
         if (null != eo) {
-            addEnumeration(apiProperty, eo);
+            addEnumeration(schema, eo);
             addEnumConstantDescription(eo, restrictionBuilder);
         }
 
         if (required) {
-            apiProperty.param(SchemaFields.REQUIRED, true);
+            schema.setRequired(true);
         }
         if (null != defaultValue) {
-            apiProperty.param(SchemaFields.DEFAULT_VALUE, defaultValue);
+            schema.setDefaultValue(defaultValue);
         }
-        addRestrictions(apiProperty, targetClass, name, restrictionBuilder);
+        addRestrictions(schema, targetClass, name, restrictionBuilder);
 
         String restrictions = restrictionBuilder.toString();
         StringBuilder descriptionBuilder = new StringBuilder(description);
@@ -185,7 +184,8 @@ public class OpenApiProcessUtil extends AbstractProcessUtil {
                     .append(restrictions);
         }
 
-        apiProperty.param(SchemaFields.DESCRIPTION, descriptionBuilder.toString());
+        schema.setDescription(descriptionBuilder.toString());
+        schema.annotate(field);
     }
 
     /**
@@ -221,22 +221,21 @@ public class OpenApiProcessUtil extends AbstractProcessUtil {
     }
 
     /**
-     * Fills apiProperty with the constants provided by eo ({@link EnumOutline#constants}).
-     *
-     * @param apiProperty
+     * Fills schemaHolder with the constants provided by eo ({@link EnumOutline#constants}).
+     * 
+     * @param schema
      *            must be a representation of {@link Schema}, constants will be placed into {@link Schema#enumeration()}
      * @param eo
      */
-    public static void addEnumeration(JAnnotationUse apiProperty, EnumOutline eo) {
-        if (apiProperty != null && eo != null) {
+    public static void addEnumeration(SchemaHolder schema, EnumOutline eo) {
+        if (schema != null && eo != null) {
             List<EnumConstantOutline> constants = eo.constants;
             if (constants != null && !constants.isEmpty()) {
-                JAnnotationArrayMember paramArray = apiProperty.paramArray(SchemaFields.ENUMERATION);
                 for (EnumConstantOutline eco : constants) {
                     // gets the actual lexical value defined in the xsd instead of the enum name, since it can be escaped in java (ie. xsd:
                     // example.test vs java enum:EXAMPLE_TEST)
                     String enumName = eco.target.getLexicalValue();
-                    paramArray.param(enumName);
+                    schema.addEnumerationValue(enumName);
                 }
             }
         }
@@ -264,28 +263,29 @@ public class OpenApiProcessUtil extends AbstractProcessUtil {
     /**
      * Obtains the given property from targetClass using propertyName, if its a collection property {@link Schema#type()} is set to
      * {@link SchemaType#ARRAY}, additionally {@link Schema#maxItems()}, {@link Schema#minItems()} is set if the collection is bounded.
-     *
-     * @param apiProperty
+     * 
+     * @param schema
      *            must be a representation of {@Schema}
+     * @param schema
      * @param targetClass
      *            used to obtain {@link CPropertyInfo} with the given propertyName
      * @param propertyName
      */
-    private void addArrayProperties(JAnnotationUse apiProperty, CClassInfo targetClass, String propertyName) {
+    private void addArrayProperties(SchemaHolder schema, CClassInfo targetClass, String propertyName) {
         CPropertyInfo property = targetClass.getProperty(propertyName);
         if (property.isCollection()) {
-            apiProperty.param(SchemaFields.TYPE, SchemaType.ARRAY);
+            schema.setType(SchemaType.ARRAY);
             XSComponent schemaComponent = property.getSchemaComponent();
             if (schemaComponent instanceof XSParticle) {
                 XSParticle particle = (XSParticle) schemaComponent;
                 BigInteger maxOccurs = particle.getMaxOccurs();
                 if (maxOccurs != null && XSParticle.UNBOUNDED != maxOccurs.intValue()) {
-                    apiProperty.param(SchemaFields.MAX_ITEMS, maxOccurs.intValue());
+                    schema.setMaxItems(maxOccurs.intValue());
                 }
 
                 BigInteger minOccurs = particle.getMinOccurs();
                 if (minOccurs != null) {
-                    apiProperty.param(SchemaFields.MIN_ITEMS, minOccurs.intValue());
+                    schema.setMinItems(minOccurs.intValue());
                 }
             }
         }
@@ -293,13 +293,13 @@ public class OpenApiProcessUtil extends AbstractProcessUtil {
 
     /**
      * Adds <xs:restriction>-s to {@link Schema} (ie."pattern", "length" etc.)
-     *
-     * @param apiProperty
+     * 
+     * @param schema
      * @param targetClass
      * @param propertyName
      * @param restrictionBuilder
      */
-    private void addRestrictions(JAnnotationUse apiProperty, CClassInfo targetClass, String propertyName, StringBuilder restrictionBuilder) {
+    private void addRestrictions(SchemaHolder schema, CClassInfo targetClass, String propertyName, StringBuilder restrictionBuilder) {
         CPropertyInfo property = targetClass.getProperty(propertyName);
         XSComponent schemaComponent = property.getSchemaComponent();
         if (schemaComponent instanceof XSParticle) {
@@ -308,23 +308,23 @@ public class OpenApiProcessUtil extends AbstractProcessUtil {
             if (xsTerm != null && xsTerm instanceof XSElementDecl && ((XSElementDecl) xsTerm).getType() != null
                     && ((XSElementDecl) xsTerm).getType().asSimpleType() != null) {
                 XSSimpleType xsSimpleType = ((XSElementDecl) xsTerm).getType().asSimpleType();
-                addLength(apiProperty, xsSimpleType, restrictionBuilder);
-                addExtremum(apiProperty, xsSimpleType, true, restrictionBuilder);
-                addExtremum(apiProperty, xsSimpleType, false, restrictionBuilder);
-                addPattern(apiProperty, xsSimpleType, restrictionBuilder);
+                addLength(schema, xsSimpleType, restrictionBuilder);
+                addExtremum(schema, xsSimpleType, true, restrictionBuilder);
+                addExtremum(schema, xsSimpleType, false, restrictionBuilder);
+                addPattern(schema, xsSimpleType, restrictionBuilder);
             }
         }
     }
 
-    private void addPattern(JAnnotationUse apiProperty, XSSimpleType xsSimpleType, StringBuilder restrictionBuilder) {
+    private void addPattern(SchemaHolder schema, XSSimpleType xsSimpleType, StringBuilder restrictionBuilder) {
         String pattern = getFacetAsString(xsSimpleType, XSFacet.FACET_PATTERN);
         if (pattern != null) {
-            apiProperty.param(SchemaFields.PATTERN, pattern);
+            schema.setPattern(pattern);
             appendRestriction(restrictionBuilder, SchemaFields.PATTERN, pattern);
         }
     }
 
-    private void addLength(JAnnotationUse apiProperty, XSSimpleType xsSimpleType, StringBuilder restrictionBuilder) {
+    private void addLength(SchemaHolder schema, XSSimpleType xsSimpleType, StringBuilder restrictionBuilder) {
         Integer length = getFacetAsInteger(xsSimpleType, XSFacet.FACET_LENGTH);
         Integer maxLength = null;
         Integer minLength = null;
@@ -337,16 +337,16 @@ public class OpenApiProcessUtil extends AbstractProcessUtil {
             minLength = getFacetAsInteger(xsSimpleType, XSFacet.FACET_MINLENGTH);
         }
         if (maxLength != null) {
-            apiProperty.param(SchemaFields.MAX_LENGTH, maxLength);
+            schema.setMaxLength(maxLength);
             appendRestriction(restrictionBuilder, SchemaFields.MAX_LENGTH, maxLength);
         }
         if (minLength != null) {
-            apiProperty.param(SchemaFields.MIN_LENGTH, minLength);
+            schema.setMinLength(minLength);
             appendRestriction(restrictionBuilder, SchemaFields.MIN_LENGTH, minLength);
         }
     }
 
-    private void addExtremum(JAnnotationUse apiProperty, XSSimpleType xsSimpleType, boolean isMaximum, StringBuilder restrictionBuilder) {
+    private void addExtremum(SchemaHolder schema, XSSimpleType xsSimpleType, boolean isMaximum, StringBuilder restrictionBuilder) {
         String extremum = getFacetAsString(xsSimpleType, isMaximum ? XSFacet.FACET_MAXEXCLUSIVE : XSFacet.FACET_MINEXCLUSIVE);
         Boolean exlusive = true;
         if (extremum == null) {
@@ -356,8 +356,13 @@ public class OpenApiProcessUtil extends AbstractProcessUtil {
         if (extremum != null) {
             try {
                 BigDecimal value = new BigDecimal(extremum);
-                apiProperty.param(isMaximum ? SchemaFields.MAXIMUM : SchemaFields.MINIMUM, extremum);
-                apiProperty.param(isMaximum ? SchemaFields.EXCLUSIVE_MAXIMUM : SchemaFields.EXCLUSIVE_MINIMUM, exlusive);
+                if (isMaximum) {
+                    schema.setMaximum(value);
+                    schema.setExclusiveMaximum(exlusive);
+                } else {
+                    schema.setMinimum(value);
+                    schema.setExclusiveMinimum(exlusive);
+                }
             } catch (NumberFormatException e) {
                 log.fine(String.format("Extremum: [%s] could not be set for SimpleType:[%s], since it cannot be parsed as BigDecimal!", extremum,
                         xsSimpleType));
