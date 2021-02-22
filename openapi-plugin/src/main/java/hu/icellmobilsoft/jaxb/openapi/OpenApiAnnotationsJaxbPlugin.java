@@ -110,7 +110,7 @@ public class OpenApiAnnotationsJaxbPlugin extends SwaggerAnnotationsJaxbPlugin {
         String value = o.target.isElement() ? o.target.getElementName().getLocalPart() : o.ref.name();
         schemaHolder.setName(value);
         String documentation = getDocumentation(o);
-        schemaHolder.setDescription((documentation != null) ? documentation : o.ref.fullName());
+        schemaHolder.setDescription(documentation);
         schemaHolder.annotate(o.implClass);
     }
 

@@ -40,6 +40,7 @@ import com.sun.tools.xjc.model.CTypeInfo;
 import com.sun.tools.xjc.outline.EnumConstantOutline;
 import com.sun.tools.xjc.outline.EnumOutline;
 import com.sun.tools.xjc.reader.xmlschema.bindinfo.BindInfo;
+import com.sun.xml.xsom.XSAnnotation;
 import com.sun.xml.xsom.XSComponent;
 import com.sun.xml.xsom.XSElementDecl;
 import com.sun.xml.xsom.XSFacet;
@@ -177,7 +178,10 @@ public class OpenApiProcessUtil extends AbstractProcessUtil {
         addRestrictions(schema, targetClass, name, restrictionBuilder);
 
         String restrictions = restrictionBuilder.toString();
-        StringBuilder descriptionBuilder = new StringBuilder(description);
+        StringBuilder descriptionBuilder = new StringBuilder();
+        if (StringUtils.isNotBlank(description)) {
+            descriptionBuilder.append(description);
+        }
         if (StringUtils.isNotBlank(restrictions) && verboseDescriptions) {
             descriptionBuilder.append(NEW_LINE).append(NEW_LINE)//
                     .append(RESTRICTIONS).append(COLON_MARK)//
@@ -186,6 +190,23 @@ public class OpenApiProcessUtil extends AbstractProcessUtil {
 
         schema.setDescription(descriptionBuilder.toString());
         schema.annotate(field);
+    }
+
+    @Override
+    protected String getDescription(CClassInfo targetClass, String propertyName) {
+        CPropertyInfo property = targetClass.getProperty(propertyName);
+        String description = null;
+        XSComponent schemaComponent = property.getSchemaComponent();
+        if (schemaComponent instanceof XSParticle) {
+            XSAnnotation annotation = ((XSParticle) schemaComponent).getTerm().getAnnotation();
+            if (annotation != null) {
+                Object annotationObj = annotation.getAnnotation();
+                if (annotationObj instanceof BindInfo && ((BindInfo) annotationObj).getDocumentation() != null) {
+                    description = ((BindInfo) annotationObj).getDocumentation();
+                }
+            }
+        }
+        return description;
     }
 
     /**

@@ -1,81 +1,92 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:jaxb="http://java.sun.com/xml/ns/jaxb" xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" xmlns="http://sample.dto.openapi.icellmobilsoft.hu/sample" xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://sample.dto.openapi.icellmobilsoft.hu/sample" elementFormDefault="qualified" attributeFormDefault="unqualified" jaxb:version="2.0" jaxb:extensionBindingPrefixes="xjc">
-    <xs:annotation>
-        <xs:appinfo>
-            <jaxb:globalBindings generateIsSetMethod="true"/>
-        </xs:appinfo>
-    </xs:annotation>
-    <xs:simpleType name="RestrictedString">
-        <xs:annotation>
-            <xs:documentation xml:lang="en">String from 10 to 50 characters (typeDoc)</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:minLength value="10"/>
-            <xs:maxLength value="50"/>
-            <xs:pattern value=".*[^\s].*"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="EnumeratedType">
-        <xs:annotation>
-            <xs:documentation xml:lang="en">enum example(typeDoc)</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:string">
-            <xs:enumeration value="ABC">
-                <xs:annotation>
-                    <xs:documentation xml:lang="en">ABC enum</xs:documentation>
-                </xs:annotation>
-            </xs:enumeration>
-            <xs:enumeration value="XYZ">
-                <xs:annotation>
-                    <xs:documentation xml:lang="en">XYZ enum</xs:documentation>
-                </xs:annotation>
-            </xs:enumeration>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="RestrictedInt">
-        <xs:annotation>
-            <xs:documentation xml:lang="en">Restricted integer (typeDoc)</xs:documentation>
-        </xs:annotation>
-        <xs:restriction base="xs:int">
-            <xs:minExclusive value="4"/>
-            <xs:maxInclusive value="10"/>
-        </xs:restriction>
-    </xs:simpleType>
-    <xs:complexType name="SampleObject">
-        <xs:annotation>
-            <xs:documentation xml:lang="hu">Példa objektum (typeDoc)</xs:documentation>
-            <xs:documentation xml:lang="en">Sample object (typeDoc)</xs:documentation>
-        </xs:annotation>
-        <xs:sequence>
-            <xs:element name="property" type="RestrictedString"/>
-        </xs:sequence>
-    </xs:complexType>
-    <xs:complexType name="SampleType">
-        <xs:annotation>
-            <xs:documentation xml:lang="hu">Példa típus (typeDoc)</xs:documentation>
-            <xs:documentation xml:lang="en">Sample type (typeDoc)</xs:documentation>
-        </xs:annotation>
-        <xs:sequence>
-            <xs:element name="someString" type="RestrictedString">
-                <xs:annotation>
-                    <xs:documentation xml:lang="en">String value restricted (elementDoc)</xs:documentation>
-                </xs:annotation>
-            </xs:element>
-            <xs:element name="someEnum" type="EnumeratedType">
-                <xs:annotation>
-                    <xs:documentation xml:lang="en">String value restricted (elementDoc)</xs:documentation>
-                </xs:annotation>
-            </xs:element>
-            <xs:element name="someInt" type="RestrictedInt" minOccurs="0">
-                <xs:annotation>
-                    <xs:documentation xml:lang="en">integer greater than 4, less than or equal to 10 (elementDoc)</xs:documentation>
-                </xs:annotation>
-            </xs:element>
-            <xs:element name="someCollection" type="SampleObject" minOccurs="2" maxOccurs="10">
-                <xs:annotation>
-                    <xs:documentation xml:lang="en">SampleObject array, containing 2 to 10 elements (elementDoc)</xs:documentation>
-                </xs:annotation>
-            </xs:element>
-        </xs:sequence>
-    </xs:complexType>
+<xs:schema xmlns:jaxb="http://java.sun.com/xml/ns/jaxb" xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc"
+		xmlns="http://sample.dto.openapi.icellmobilsoft.hu/sample" xmlns:xs="http://www.w3.org/2001/XMLSchema"
+		targetNamespace="http://sample.dto.openapi.icellmobilsoft.hu/sample" elementFormDefault="qualified"
+		attributeFormDefault="unqualified" jaxb:version="2.0" jaxb:extensionBindingPrefixes="xjc">
+	<xs:annotation>
+		<xs:appinfo>
+			<jaxb:globalBindings generateIsSetMethod="true"/>
+		</xs:appinfo>
+	</xs:annotation>
+	<xs:simpleType name="RestrictedString">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">String from 10 to 50 characters (typeDoc)</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="10"/>
+			<xs:maxLength value="50"/>
+			<xs:pattern value=".*[^\s].*"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="EnumeratedType">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">enum example(typeDoc)</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="ABC">
+				<xs:annotation>
+					<xs:documentation xml:lang="en">ABC enum</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="XYZ">
+				<xs:annotation>
+					<xs:documentation xml:lang="en">XYZ enum</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="RestrictedInt">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">Restricted integer (typeDoc)</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:int">
+			<xs:minExclusive value="4"/>
+			<xs:maxInclusive value="10"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="SampleObject">
+		<xs:annotation>
+			<xs:documentation xml:lang="hu">Példa objektum (typeDoc)</xs:documentation>
+			<xs:documentation xml:lang="en">Sample object (typeDoc)</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="property" type="RestrictedString"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="NoDocObject">
+		<xs:sequence>
+			<xs:element name="property" type="xs:string"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="SampleType">
+		<xs:annotation>
+			<xs:documentation xml:lang="hu">Példa típus (typeDoc)</xs:documentation>
+			<xs:documentation xml:lang="en">Sample type (typeDoc)</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="someString" type="RestrictedString">
+				<xs:annotation>
+					<xs:documentation xml:lang="en">String value restricted (elementDoc)</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="someEnum" type="EnumeratedType">
+				<xs:annotation>
+					<xs:documentation xml:lang="en">String value restricted (elementDoc)</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="someInt" type="RestrictedInt" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation xml:lang="en">integer greater than 4, less than or equal to 10 (elementDoc)
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="someNoDoc" type="NoDocObject" minOccurs="0"/>
+			<xs:element name="someCollection" type="SampleObject" minOccurs="2" maxOccurs="10">
+				<xs:annotation>
+					<xs:documentation xml:lang="en">SampleObject array, containing 2 to 10 elements (elementDoc)
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
 </xs:schema>

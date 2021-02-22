@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
@@ -56,13 +57,13 @@ public class SchemaHolder {
             return;
         }
         JAnnotationUse annotationUse = annotatable.annotate(Schema.class);
-        if (name != null) {
+        if (StringUtils.isNotBlank(name)) {
             annotationUse.param(SchemaFields.NAME, name);
         }
-        if (title != null) {
+        if (StringUtils.isNotBlank(title)) {
             annotationUse.param(SchemaFields.TITLE, title);
         }
-        if (description != null) {
+        if (StringUtils.isNotBlank(description)) {
             annotationUse.param(SchemaFields.DESCRIPTION, description);
         }
         if (required != null) {
@@ -74,7 +75,7 @@ public class SchemaHolder {
                 paramArray.param(enumValue);
             }
         }
-        if (defaultValue != null) {
+        if (StringUtils.isNotBlank(defaultValue)) {
             annotationUse.param(SchemaFields.DEFAULT_VALUE, defaultValue);
         }
         if (type != null) {
@@ -104,16 +105,16 @@ public class SchemaHolder {
         if (exclusiveMinimum != null) {
             annotationUse.param(SchemaFields.EXCLUSIVE_MINIMUM, exclusiveMinimum);
         }
-        if (pattern != null) {
+        if (StringUtils.isNotBlank(pattern)) {
             annotationUse.param(SchemaFields.PATTERN, pattern);
         }
         if (hidden != null) {
             annotationUse.param(SchemaFields.HIDDEN, hidden);
         }
-        if (format != null) {
+        if (StringUtils.isNotBlank(format)) {
             annotationUse.param(SchemaFields.FORMAT, format);
         }
-        if (example != null) {
+        if (StringUtils.isNotBlank(example)) {
             annotationUse.param(SchemaFields.EXAMPLE, example);
         }
     }
