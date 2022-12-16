@@ -11,27 +11,43 @@
 		<java.version>1.8</java.version>
 		<project.scm.id>icell-github-server</project.scm.id>
 		<nexus-staging-maven-plugin.version>1.6.8</nexus-staging-maven-plugin.version>
+		<jaxb.version>2.3.0</jaxb.version>
 	</properties>
 	<dependencies>
-		<dependency>
-			<groupId>hu.icellmobilsoft.jaxb</groupId>
-			<artifactId>swagger-jaxb</artifactId>
-			<version>1.1.0</version>
-		</dependency>
 		<dependency>
 			<groupId>org.eclipse.microprofile.openapi</groupId>
 			<artifactId>microprofile-openapi-api</artifactId>
 			<version>1.0.1</version>
 		</dependency>
 		<dependency>
+			<groupId>javax.xml.bind</groupId>
+			<artifactId>jaxb-api</artifactId>
+			<version>${jaxb.version}</version>
+		</dependency>
+		<dependency>
 			<groupId>com.sun.xml.bind</groupId>
 			<artifactId>jaxb-core</artifactId>
-			<version>2.3.0</version>
+			<version>${jaxb.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.sun.xml.bind</groupId>
+			<artifactId>jaxb-xjc</artifactId>
+			<version>${jaxb.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.sun.xml.bind</groupId>
+			<artifactId>jaxb-impl</artifactId>
+			<version>${jaxb.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
 			<version>3.9</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-collections4</artifactId>
+			<version>4.4</version>
 		</dependency>
 	</dependencies>
 	<scm>

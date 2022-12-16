@@ -20,27 +20,39 @@
 package hu.icellmobilsoft.jaxb.openapi;
 
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.Collection;
+import java.util.Optional;
 
-import javax.xml.bind.annotation.XmlAccessType;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.ArrayUtils;
+import org.xml.sax.ErrorHandler;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
-import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
-
+import com.sun.codemodel.JFieldVar;
+import com.sun.codemodel.JMethod;
 import com.sun.tools.xjc.BadCommandLineException;
 import com.sun.tools.xjc.Options;
+import com.sun.tools.xjc.Plugin;
 import com.sun.tools.xjc.outline.ClassOutline;
 import com.sun.tools.xjc.outline.EnumOutline;
+import com.sun.tools.xjc.outline.FieldOutline;
+import com.sun.tools.xjc.outline.Outline;
 
-import be.redlab.jaxb.swagger.ProcessStrategy;
-import be.redlab.jaxb.swagger.SwaggerAnnotationsJaxbPlugin;
-
-import hu.icellmobilsoft.jaxb.openapi.process.OpenApiProcessUtil;
+import hu.icellmobilsoft.jaxb.openapi.process.ClassSchemaCalculator;
+import hu.icellmobilsoft.jaxb.openapi.process.EnumSchemaCalculator;
+import hu.icellmobilsoft.jaxb.openapi.process.FieldSchemaCalculator;
+import hu.icellmobilsoft.jaxb.openapi.process.SchemaCalculator;
 import hu.icellmobilsoft.jaxb.openapi.process.SchemaHolder;
 
 /**
+ * The type Open api annotations jaxb plugin.
+ *
  * @author mark.petrenyi
  */
-public class OpenApiAnnotationsJaxbPlugin extends SwaggerAnnotationsJaxbPlugin {
+public class OpenApiAnnotationsJaxbPlugin extends Plugin {
 
     private static final String OPENAPIFY = "openapify";
     private static final String VERBOSE_DESCRIPTIONS = OPENAPIFY + ":verboseDescriptions";
@@ -49,8 +61,8 @@ public class OpenApiAnnotationsJaxbPlugin extends SwaggerAnnotationsJaxbPlugin {
     private boolean verboseDescriptions = false;
 
     /**
-     * The option name to activate OpenApi annotations.
-     *
+     * {@inheritDoc}
+     * 
      * @return {@value OPENAPIFY}
      */
     @Override
@@ -59,7 +71,7 @@ public class OpenApiAnnotationsJaxbPlugin extends SwaggerAnnotationsJaxbPlugin {
     }
 
     /**
-     * A usage description
+     * {@inheritDoc}
      *
      * @return {@value USAGE}
      */
@@ -68,6 +80,9 @@ public class OpenApiAnnotationsJaxbPlugin extends SwaggerAnnotationsJaxbPlugin {
         return USAGE;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int parseArgument(Options opt, String[] args, int i) throws BadCommandLineException, IOException {
         int consumed = super.parseArgument(opt, args, i);
@@ -81,42 +96,157 @@ public class OpenApiAnnotationsJaxbPlugin extends SwaggerAnnotationsJaxbPlugin {
     }
 
     /**
-     * (Pre)processing of EnumOutlines.
-     *
-     * @param enums
+     * {@inheritDoc}
      */
     @Override
-    protected void processEnums(Collection<EnumOutline> enums) {
-        super.processEnums(enums);
+    public boolean run(final Outline outline, final Options opt, final ErrorHandler errorHandler) throws SAXException {
+        processEnums(outline.getEnums(), errorHandler);
+        processClasses(outline.getClasses(), errorHandler);
+        return true;
+    }
+
+    /**
+     * Processing of EnumOutlines.
+     *
+     * @param enums
+     *            collection of enum outlines to process
+     * @param errorHandler
+     *            the error handler
+     */
+    protected void processEnums(Collection<EnumOutline> enums, ErrorHandler errorHandler) {
+        if (CollectionUtils.isEmpty(enums)) {
+            return;
+        }
         for (EnumOutline eo : enums) {
-            if (eo.clazz != null) {
-                SchemaHolder schema = new SchemaHolder();
-                schema.setType(SchemaType.STRING);
-                OpenApiProcessUtil.addEnumeration(schema, eo);
-                schema.annotate(eo.clazz);
+            Optional<SchemaHolder> schema = getEnumSchemaCalculator().calculateSchema(eo, verboseDescriptions);
+            if (schema.isPresent() && eo.clazz != null) {
+                schema.get().annotate(eo.clazz);
             }
         }
     }
 
     /**
-     * Add the class level annotation, {@link io.swagger.annotations.ApiModel}
+     * Process ClassOutlines.
      *
-     * @param o
-     *            the ClassOutline
+     * @param classes
+     *            the ClassOutline to process
+     * @param errorHandler
+     *            the error handler
+     * @throws SAXException
+     *             in case of error
      */
-    @Override
-    protected void addClassAnnotation(final ClassOutline o) {
-        SchemaHolder schemaHolder = new SchemaHolder();
-        String value = o.target.isElement() ? o.target.getElementName().getLocalPart() : o.ref.name();
-        schemaHolder.setName(value);
-        String documentation = getDocumentation(o);
-        schemaHolder.setDescription(documentation);
-        schemaHolder.annotate(o.implClass);
+    protected void processClasses(Collection<? extends ClassOutline> classes, ErrorHandler errorHandler) throws SAXException {
+        for (ClassOutline o : classes) {
+            addClassAnnotation(o, errorHandler);
+            processFields(o, o.getDeclaredFields(), errorHandler);
+            if (o.implClass != null) {
+                processMethodImplementations(o.implClass.methods(), errorHandler);
+            }
+        }
     }
 
-    @Override
-    protected ProcessStrategy getProcessStrategy(XmlAccessType access) {
-        return OpenApiProcessStrategyFactory.getProcessStrategy(access, verboseDescriptions);
+    /**
+     * Add {@link org.eclipse.microprofile.openapi.annotations.media.Schema} annotation on class level.
+     *
+     * @param classOutline
+     *            the classOutline
+     * @param errorHandler
+     *            the error handler
+     */
+    protected void addClassAnnotation(final ClassOutline classOutline, ErrorHandler errorHandler) {
+        if (classOutline == null) {
+            return;
+        }
+
+        Optional<SchemaHolder> schema = getClassSchemaCalculator().calculateSchema(classOutline, verboseDescriptions);
+        if (schema.isPresent() && classOutline.implClass != null) {
+            schema.get().annotate(classOutline.implClass);
+        }
+    }
+
+    /**
+     * Process FieldOutline.
+     *
+     * @param parentOutline
+     *            the parent ClassOutline of the fields
+     * @param declaredFields
+     *            the declared fields on parentOutline
+     * @param errorHandler
+     *            the error handler
+     * @throws SAXException
+     *             in case of error
+     */
+    protected void processFields(ClassOutline parentOutline, FieldOutline[] declaredFields, ErrorHandler errorHandler) throws SAXException {
+        if (ArrayUtils.isNotEmpty(declaredFields)) {
+            for (FieldOutline declaredField : declaredFields) {
+                Optional<SchemaHolder> schemaHolderOpt = getFieldSchemaCalculator().calculateSchema(declaredField, verboseDescriptions);
+
+                if (schemaHolderOpt.isPresent()) {
+                    annotateFields(schemaHolderOpt.get(), parentOutline, declaredField, errorHandler);
+                }
+            }
+        }
+    }
+
+    /**
+     * Process actual method declarations. ie.: can be used to hide isSet methods
+     *
+     * @param methods
+     *            the methods to process
+     * @param errorHandler
+     *            the error handler
+     */
+    protected void processMethodImplementations(Collection<JMethod> methods, ErrorHandler errorHandler) {
+        if (CollectionUtils.isNotEmpty(methods)) {
+            for (JMethod method : methods) {
+                String name = method.name();
+                if (name != null && name.startsWith("isSet")) {
+                    SchemaHolder schemaHolder = new SchemaHolder();
+                    schemaHolder.setHidden(true);
+                    schemaHolder.annotate(method);
+                }
+            }
+        }
+    }
+
+    /**
+     * Gets SchemaCalculator used to create {@link org.eclipse.microprofile.openapi.annotations.media.Schema} from {@link EnumOutline}
+     *
+     * @return {@link SchemaCalculator} instance for {@link EnumOutline}
+     */
+    protected SchemaCalculator<EnumOutline> getEnumSchemaCalculator() {
+        return EnumSchemaCalculator.getInstance();
+    }
+
+    /**
+     * Gets SchemaCalculator used to create {@link org.eclipse.microprofile.openapi.annotations.media.Schema} from {@link ClassOutline}
+     *
+     * @return {@link SchemaCalculator} instance for {@link ClassOutline}
+     */
+    protected SchemaCalculator<ClassOutline> getClassSchemaCalculator() {
+        return ClassSchemaCalculator.getInstance();
+    }
+
+    /**
+     * Gets SchemaCalculator used to create {@link org.eclipse.microprofile.openapi.annotations.media.Schema} from {@link FieldOutline}
+     *
+     * @return {@link SchemaCalculator} instance for {@link FieldOutline}
+     */
+    protected SchemaCalculator<FieldOutline> getFieldSchemaCalculator() {
+        return FieldSchemaCalculator.getInstance();
+    }
+
+    private void annotateFields(SchemaHolder schemaHolder, ClassOutline parentOutline, FieldOutline declaredField, ErrorHandler errorHandler)
+            throws SAXException {
+        String name = declaredField.getPropertyInfo().getName(false);
+        if (parentOutline != null && parentOutline.implClass != null && MapUtils.isNotEmpty(parentOutline.implClass.fields())
+                && parentOutline.implClass.fields().containsKey(name)) {
+            JFieldVar jFieldVar = parentOutline.implClass.fields().get(name);
+            schemaHolder.annotate(jFieldVar);
+        } else {
+            errorHandler.warning(
+                    new SAXParseException(MessageFormat.format("Could not annotate field: [{0}]!", name), declaredField.getPropertyInfo().locator));
+        }
     }
 
 }
