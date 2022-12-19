@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog">
+	<public
+		publicId="http://sample.dto.openapi.icellmobilsoft.hu/sample"
+		uri="maven:hu.icellmobilsoft.jaxb:openapi-jaxb-test-xsd::!/xsd/hu/icellmobilsoft/jaxb/openapi/dto/sample.xsd" />
+</catalog>

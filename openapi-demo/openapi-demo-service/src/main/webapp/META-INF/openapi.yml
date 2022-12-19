@@ -1,4 +1,0 @@
-info:
-  title: OpenAPI xsd POC
-  description: OpenAPI xsd plugin proof-of-concept application
-  version: ${project.version}
