@@ -38,14 +38,13 @@ public class SampleType {
     @Schema(name = "someEnum", title = "someEnum", description = "String value restricted (elementDoc)", required = true)
     protected EnumeratedType someEnum;
     @Schema(name = "someInt", title = "someInt",
-            description = "integer greater than 4, less than or equal to 10 (elementDoc)\n\t\t\t\t\t\n\nRestrictions: \n* maximum: 10\n* exclusiveMaximum: false\n* minimum: 4\n* exclusiveMinimum: true",
+            description = "integer greater than 4, less than or equal to 10 (elementDoc)\n\nRestrictions: \n* maximum: 10\n* exclusiveMaximum: false\n* minimum: 4\n* exclusiveMinimum: true",
             maximum = "10", exclusiveMaximum = false, minimum = "4", exclusiveMinimum = true)
     protected Integer someInt;
     @Schema(name = "someNoDoc", title = "someNoDoc")
     protected NoDocObject someNoDoc;
-    @Schema(name = "someCollection", title = "someCollection",
-            description = "SampleObject array, containing 2 to 10 elements (elementDoc)\n\t\t\t\t\t", required = true, type = SchemaType.ARRAY,
-            maxItems = 10, minItems = 2)
+    @Schema(name = "someCollection", title = "someCollection", description = "SampleObject array, containing 2 to 10 elements (elementDoc)",
+            required = true, type = SchemaType.ARRAY, maxItems = 10, minItems = 2)
     protected List<SampleObject> someCollection;
 
     /**

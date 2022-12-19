@@ -76,15 +76,13 @@
 			</xs:element>
 			<xs:element name="someInt" type="RestrictedInt" minOccurs="0">
 				<xs:annotation>
-					<xs:documentation xml:lang="en">integer greater than 4, less than or equal to 10 (elementDoc)
-					</xs:documentation>
+					<xs:documentation xml:lang="en">integer greater than 4, less than or equal to 10 (elementDoc)</xs:documentation>
 				</xs:annotation>
 			</xs:element>
 			<xs:element name="someNoDoc" type="NoDocObject" minOccurs="0"/>
 			<xs:element name="someCollection" type="SampleObject" minOccurs="2" maxOccurs="10">
 				<xs:annotation>
-					<xs:documentation xml:lang="en">SampleObject array, containing 2 to 10 elements (elementDoc)
-					</xs:documentation>
+					<xs:documentation xml:lang="en">SampleObject array, containing 2 to 10 elements (elementDoc)</xs:documentation>
 				</xs:annotation>
 			</xs:element>
 		</xs:sequence>

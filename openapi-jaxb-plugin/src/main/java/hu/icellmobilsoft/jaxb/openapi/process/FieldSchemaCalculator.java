@@ -96,7 +96,7 @@ public class FieldSchemaCalculator implements SchemaCalculator<FieldOutline> {
                     .append(restrictions);
         }
 
-        schema.setDescription(descriptionBuilder.toString());
+        schema.setDescription(StringUtils.trim(descriptionBuilder.toString()));
         return Optional.of(schema);
     }
 

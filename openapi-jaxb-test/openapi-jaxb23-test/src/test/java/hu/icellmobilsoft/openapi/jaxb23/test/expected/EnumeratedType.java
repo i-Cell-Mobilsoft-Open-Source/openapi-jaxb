@@ -19,17 +19,11 @@
  */
 package hu.icellmobilsoft.openapi.jaxb23.test.expected;
 
-import javax.xml.bind.annotation.XmlEnum;
-import javax.xml.bind.annotation.XmlType;
-
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
-@Schema(enumeration = {
-    "ABC",
-    "XYZ"
-}, type = SchemaType.STRING)
-public enum EnumeratedType {
 
+@Schema(description = "enum example(typeDoc)", enumeration = { "ABC", "XYZ" }, type = SchemaType.STRING)
+public enum EnumeratedType {
 
     /**
      * ABC enum

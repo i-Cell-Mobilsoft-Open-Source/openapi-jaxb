@@ -25,11 +25,14 @@ import java.util.Optional;
 import java.util.logging.Logger;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 
 import com.sun.tools.xjc.model.CEnumConstant;
 import com.sun.tools.xjc.outline.EnumConstantOutline;
 import com.sun.tools.xjc.outline.EnumOutline;
+import com.sun.tools.xjc.reader.xmlschema.bindinfo.BindInfo;
+import com.sun.xml.xsom.XSAnnotation;
 
 /**
  * {@link EnumOutline} implementation for {@link SchemaCalculator}
@@ -59,6 +62,7 @@ public class EnumSchemaCalculator implements SchemaCalculator<EnumOutline> {
         }
         SchemaHolder schema = new SchemaHolder();
         schema.setType(SchemaType.STRING);
+        schema.setDescription(getDocumentation(enumOutline));
         List<EnumConstantOutline> constants = enumOutline.constants;
         if (CollectionUtils.isNotEmpty(constants)) {
             // gets the actual lexical value defined in the xsd instead of the enum name,
@@ -69,5 +73,16 @@ public class EnumSchemaCalculator implements SchemaCalculator<EnumOutline> {
                     .forEach(schema::addEnumerationValue);
         }
         return Optional.of(schema);
+    }
+
+    private String getDocumentation(final EnumOutline o) {
+        if (o == null || o.target == null) {
+            return null;
+        }
+        XSAnnotation annotation = o.target.getSchemaComponent().getAnnotation();
+        if (annotation != null && annotation.getAnnotation() instanceof BindInfo) {
+            return StringUtils.trim(((BindInfo) annotation.getAnnotation()).getDocumentation());
+        }
+        return null;
     }
 }

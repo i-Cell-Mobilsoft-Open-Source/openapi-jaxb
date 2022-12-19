@@ -22,6 +22,8 @@ package hu.icellmobilsoft.jaxb.openapi.process;
 import java.util.Optional;
 import java.util.logging.Logger;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.sun.tools.xjc.outline.ClassOutline;
 import com.sun.tools.xjc.reader.xmlschema.bindinfo.BindInfo;
 import com.sun.xml.xsom.XSAnnotation;
@@ -67,7 +69,7 @@ public class ClassSchemaCalculator implements SchemaCalculator<ClassOutline> {
         }
         XSAnnotation annotation = o.target.getSchemaComponent().getAnnotation();
         if (annotation != null && annotation.getAnnotation() instanceof BindInfo) {
-            return ((BindInfo) annotation.getAnnotation()).getDocumentation();
+            return StringUtils.trim(((BindInfo) annotation.getAnnotation()).getDocumentation());
         }
         return null;
     }

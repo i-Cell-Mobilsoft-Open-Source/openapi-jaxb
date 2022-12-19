@@ -24,7 +24,7 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 @Schema(name = "SampleObject", description = "Sample object (typeDoc)")
 public class SampleObject {
 
-    @Schema(name = "property", title = "property", description = "\n\nRestrictions: \n* maxLength: 50\n* minLength: 10\n* pattern: .*[^\\s].*",
+    @Schema(name = "property", title = "property", description = "Restrictions: \n* maxLength: 50\n* minLength: 10\n* pattern: .*[^\\s].*",
             required = true, maxLength = 50, minLength = 10, pattern = ".*[^\\s].*")
     protected String property;
 
