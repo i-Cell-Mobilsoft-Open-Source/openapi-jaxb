@@ -1,5 +1,5 @@
 = OpenApi POC
-:demoVersion: 1.1.1-SNAPSHOT
+:demoVersion: 1.2.0-SNAPSHOT
 :thorntailJar: openapi-demo-service/target/openapi-demo-service-{demoVersion}-thorntail.jar
 
 POC application for openApi plugin

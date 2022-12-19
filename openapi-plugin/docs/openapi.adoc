@@ -8,12 +8,12 @@ The plugin is activated with the `-openapify` argument.
 
 [source,xml]
 ----
-...
+<!-- ... -->
 <plugin>
     <groupId>org.jvnet.jaxb2.maven2</groupId>
     <artifactId>maven-jaxb2-plugin</artifactId>
     <version>0.13.3</version>
-    ...
+    <!-- ... -->
     <configuration>
         <schemaDirectory>src/main/resources</schemaDirectory>
         <schemaIncludes>
@@ -21,37 +21,21 @@ The plugin is activated with the `-openapify` argument.
         </schemaIncludes>
         <generateDirectory>${project.build.directory}/generated-sources/src/main/java</generateDirectory>
         <args>
-			<arguments>-openapify</arguments> // <1>
+			<arguments>-openapify</arguments> <!--1-->
         </args>
         <plugins>
-            <plugin> // <2>
+            <plugin> <!--2-->
 				<groupId>hu.icellmobilsoft.jaxb</groupId>
 				<artifactId>openapi-jaxb</artifactId>
-				<version>1.1.0</version>
+				<version>1.2.0</version>
             </plugin>
-
         </plugins>
-        <!--<dependencies>--> // <3>
-			<!--<dependency>-->
-				<!--<groupId>org.eclipse.microprofile.openapi</groupId>-->
-				<!--<artifactId>microprofile-openapi-api</artifactId>-->
-				<!--<version>1.0.1</version>-->
-			<!--</dependency>-->
-			<!--<dependency>-->
-				<!--<groupId>com.sun.xml.bind</groupId>-->
-				<!--<artifactId>jaxb-core</artifactId>-->
-				<!--<version>2.2.11</version>-->
-			<!--</dependency>-->
-        <!--</dependencies>-->
     </configuration>
 </plugin>
 ----
 <1> activate the plugin with adding `<arguments>-openapify</arguments>` to `//plugin/configuration/args`.
 <2> include the artifact `hu.icellmobilsoft.jaxb:openapi-jaxb` under `//plugin/configuration/plugins`.
-<3> The original plugin README states that the transitive dependencies should be provided here, however it work without it..
 
-
-NOTE: The `-swaggerify` argument is still available, both arguments can be provided, in that case the generated classes will be annotated with both OpenApi and Swagger related annotations.
 
 IMPORTANT: In order to compile the generated sources the `org.eclipse.microprofile.openapi:microprofile-openapi-api`
 artifact should be included as dependency (at least with _provided_ scope)!
@@ -59,16 +43,17 @@ artifact should be included as dependency (at least with _provided_ scope)!
 
 [source,xml]
 ----
-<project ...>
-	...
+	<!-- ... -->
 	<dependencies>
-			...
+			<!-- ... -->
 			<dependency>
 				<groupId>org.eclipse.microprofile.openapi</groupId>
 				<artifactId>microprofile-openapi-api</artifactId>
 				<version>1.0.1</version>
 				<scope>provided</scope>
 			</dependency>
+            <!-- ... -->
+	</dependencies>
 ----
 
 == Details
@@ -119,12 +104,12 @@ Because of these the plugin can be run with the `verboseDescriptions` flag in or
 
 [source,xml]
 ----
-...
+<!-- ... -->
 <plugin>
     <groupId>org.jvnet.jaxb2.maven2</groupId>
     <artifactId>maven-jaxb2-plugin</artifactId>
     <version>0.13.3</version>
-    ...
+    <!-- ... -->
     <configuration>
         <schemaDirectory>src/main/resources</schemaDirectory>
         <schemaIncludes>
@@ -132,8 +117,8 @@ Because of these the plugin can be run with the `verboseDescriptions` flag in or
         </schemaIncludes>
         <generateDirectory>${project.build.directory}/generated-sources/src/main/java</generateDirectory>
         <args>
-			<arguments>-openapify</arguments> // <1>
-			<arguments>-openapify:verboseDescriptions</arguments> // <2>
+			<arguments>-openapify</arguments><!--1-->
+			<arguments>-openapify:verboseDescriptions</arguments><!--2-->
         </args>
         <plugins>
             <plugin>
@@ -234,7 +219,7 @@ Restrictions:
 
 * minimum: 2010-01-01
 * exclusiveMinimum: false
-* pattern: \d{4}-\d{2}-\d{2}
+* pattern: +\d{4}-\d{2}-\d{2}+
 
 === Issues
 
