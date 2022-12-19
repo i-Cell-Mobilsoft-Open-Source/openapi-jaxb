@@ -4,4 +4,4 @@ Openapi XJC plugin.
 When generating java code from xsd,
 this plugin annotates the generated classes with the proper OpenAPI annotations.
 
-include::docs/openapi.adoc[leveloffset=1]
+include::openapi.adoc[leveloffset=1]

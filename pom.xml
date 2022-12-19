@@ -11,13 +11,20 @@
 	<groupId>hu.icellmobilsoft.jaxb</groupId>
 	<artifactId>openapi-jaxb</artifactId>
 	<version>1.2.0-SNAPSHOT</version>
+	<packaging>pom</packaging>
+	<modules>
+		<module>openapi-jaxb-plugin</module>
+		<module>openapi-jaxb23-plugin</module>
+	</modules>
 
 	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<maven.build.timestamp.format>yyyy-MM-dd HH:mm:ss</maven.build.timestamp.format>
 		<project.scm.id>icell-github-server</project.scm.id>
-		<nexus-staging-maven-plugin.version>1.6.8</nexus-staging-maven-plugin.version>
-		<jaxb.version>2.3.0</jaxb.version>
+		<jacoco.ut.execution.data.file>${project.build.directory}/coverage-reports/jacoco-ut.exec</jacoco.ut.execution.data.file>
+		<jacoco.it.execution.data.file>${project.build.directory}/coverage-reports/jacoco-it.exec</jacoco.it.execution.data.file>
+		<surefire.reportsDir>${project.build.directory}/surefire-reports</surefire.reportsDir>
+		<failsafe.reportsDir>${project.build.directory}/failsafe-reports</failsafe.reportsDir>
+		<sonar.junit.reportPaths>${surefire.reportsDir}, ${failsafe.reportsDir}</sonar.junit.reportPaths>
+		<sonar.jacoco.reportPaths>${jacoco.ut.execution.data.file}, ${jacoco.it.execution.data.file}</sonar.jacoco.reportPaths>
 	</properties>
 
 	<prerequisites>
@@ -42,44 +49,6 @@
 		<url>https://github.com/icellmobilsoft/openapi-jaxb.git</url>
 		<tag>HEAD</tag>
 	</scm>
-
-	<dependencies>
-		<dependency>
-			<groupId>org.eclipse.microprofile.openapi</groupId>
-			<artifactId>microprofile-openapi-api</artifactId>
-			<version>1.0.1</version>
-		</dependency>
-		<dependency>
-			<groupId>javax.xml.bind</groupId>
-			<artifactId>jaxb-api</artifactId>
-			<version>${jaxb.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.sun.xml.bind</groupId>
-			<artifactId>jaxb-core</artifactId>
-			<version>${jaxb.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.sun.xml.bind</groupId>
-			<artifactId>jaxb-xjc</artifactId>
-			<version>${jaxb.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.sun.xml.bind</groupId>
-			<artifactId>jaxb-impl</artifactId>
-			<version>${jaxb.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-lang3</artifactId>
-			<version>3.9</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-collections4</artifactId>
-			<version>4.4</version>
-		</dependency>
-	</dependencies>
 
 	<build>
 		<pluginManagement>

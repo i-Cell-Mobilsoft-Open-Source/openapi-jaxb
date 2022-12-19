@@ -3,15 +3,7 @@
 :sectnums:
 = OpenApi 3 Plugin
 
-//A README.adoc-ot az index.adoc-ból generáljuk preprocessor scripttel, ami kicseréli az include-okat a tényleges adoc szövegre
-//mivel a github egyelőre nem képes include-olni csak linkelni
-//script: https://github.com/asciidoctor/asciidoctor-extensions-lab/blob/master/scripts/asciidoc-coalescer.rb script
-//futtatás: ruby ~/Work/iCell/Util/asciidoctor/scripts/asciidoc-coalescer.rb -a readme=true -o README.adoc index.adoc
-//Releativ linkek megadása:
-//ifndef::readme[link:realtiv_utvonal[openapi-demo]]
-//ifdef::readme[link:root-utvonal[openapi-demo]]
-
-openapi-jaxb plugin and demo application
+openapi-jaxb plugin
 
 == Maven central
 This project is available in maven central as:
@@ -20,10 +12,8 @@ This project is available in maven central as:
     <dependency>
         <groupId>hu.icellmobilsoft.jaxb</groupId>
         <artifactId>openapi-jaxb</artifactId>
-        <version>1.1.0</version>
+        <version>2.0.0</version>
     </dependency>
 ----
 
-include::openapi-plugin/plugin.adoc[leveloffset=1]
-
-include::openapi-demo/demo.adoc[leveloffset=1]
+include::docs/plugin.adoc[leveloffset=1]
