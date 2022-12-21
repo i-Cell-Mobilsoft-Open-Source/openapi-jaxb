@@ -12,6 +12,8 @@
     <modules>
         <module>openapi-jaxb-test-xsd</module>
         <module>openapi-jaxb23-test</module>
+        <module>openapi-jaxb40-test</module>
+        <module>openapi-jaxb40-ant-tool</module>
     </modules>
 
 </project>

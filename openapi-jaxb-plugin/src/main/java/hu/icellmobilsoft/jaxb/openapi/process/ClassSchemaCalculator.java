@@ -67,7 +67,7 @@ public class ClassSchemaCalculator implements SchemaCalculator<ClassOutline> {
         if (o == null || o.target == null) {
             return null;
         }
-        XSAnnotation annotation = o.target.getSchemaComponent().getAnnotation();
+        XSAnnotation annotation = o.getTarget().getSchemaComponent().getAnnotation();
         if (annotation != null && annotation.getAnnotation() instanceof BindInfo) {
             return StringUtils.trim(((BindInfo) annotation.getAnnotation()).getDocumentation());
         }

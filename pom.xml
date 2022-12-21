@@ -14,7 +14,6 @@
 	<packaging>pom</packaging>
 	<modules>
 		<module>openapi-jaxb-plugin</module>
-		<module>openapi-jaxb23-plugin</module>
 		<module>openapi-jaxb-test</module>
 	</modules>
 
@@ -31,7 +30,7 @@
 	<prerequisites>
 		<maven>3.3.0</maven>
 	</prerequisites>
-	
+
 	<description>XJC Plugin to add OpenAPI Annotations to your openapi generated JAXB classes, see github for info</description>
 	<url>https://github.com/icellmobilsoft/openapi-jaxb</url>
 
