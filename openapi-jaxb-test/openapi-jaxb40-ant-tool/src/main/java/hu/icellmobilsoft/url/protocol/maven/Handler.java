@@ -93,8 +93,6 @@ public class Handler extends URLStreamHandler {
     }
 
     private URL getResourceRecursively(ClassLoader classLoader, String path) {
-        System.out.println("classLoader: " + classLoader);
-
         URL result = null;
         if (classLoader != null) {
             result = classLoader.getResource(path);
