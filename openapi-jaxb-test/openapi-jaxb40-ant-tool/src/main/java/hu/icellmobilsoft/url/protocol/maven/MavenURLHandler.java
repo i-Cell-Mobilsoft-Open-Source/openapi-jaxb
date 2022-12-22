@@ -33,7 +33,7 @@ import org.apache.commons.lang3.StringUtils;
  * <pre>
  * maven:hu.icellmobilsoft.coffee:coffee-dto-xsd:jar::!/xsd/hu/icellmobilsoft/coffee/dto/common/common.xsd
  * </pre>
- *
+ * <p>
  * Ennek a formatuma a kovetkezo: <code>maven:groupId:atifactId:package:version:!fajl_path</code>
  * <ul>
  * <li>protocol - URL schema protocol, ebben az esetben "maven"</li>
@@ -46,18 +46,30 @@ import org.apache.commons.lang3.StringUtils;
  * @author imre.scheffer
  * @since 1.0.0
  */
-public class Handler extends URLStreamHandler {
+public class MavenURLHandler extends URLStreamHandler {
 
     private static final String SEPARATOR = "!";
+    /**
+     * The constant DIR_SEPARATOR.
+     */
     public static final String DIR_SEPARATOR = "/";
 
-    private ClassLoader classLoader;
+    private final ClassLoader classLoader;
 
-    public Handler() {
-        this(Handler.class.getClassLoader());
+    /**
+     * Instantiates a new MavenURLHandler, will use MavenURLHandler.class.getClassLoader() as classloader
+     */
+    public MavenURLHandler() {
+        this(MavenURLHandler.class.getClassLoader());
     }
 
-    public Handler(ClassLoader classLoader) {
+    /**
+     * Instantiates a new MavenURLHandler.
+     *
+     * @param classLoader
+     *            the class loader to find urls
+     */
+    public MavenURLHandler(ClassLoader classLoader) {
         this.classLoader = classLoader;
     }
 
@@ -87,18 +99,9 @@ public class Handler extends URLStreamHandler {
 
         URL result = null;
         if (classLoader != null) {
-            result = getResourceRecursively(classLoader, path);
-        }
-        return result;
-    }
-
-    private URL getResourceRecursively(ClassLoader classLoader, String path) {
-        URL result = null;
-        if (classLoader != null) {
             result = classLoader.getResource(path);
-            if (result == null) {
-                result = getResourceRecursively(classLoader.getParent(), path);
-            }
+        } else {
+            result = getClass().getClassLoader().getResource(path);
         }
         return result;
     }

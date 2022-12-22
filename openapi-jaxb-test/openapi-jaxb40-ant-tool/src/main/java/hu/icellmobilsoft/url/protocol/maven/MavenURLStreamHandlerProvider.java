@@ -35,10 +35,19 @@ public class MavenURLStreamHandlerProvider extends URLStreamHandlerProvider {
 
     private ClassLoader classLoader;
 
+    /**
+     * Instantiates a new MavenURLStreamHandlerProvider, will use MavenURLStreamHandlerProvider.class.getClassLoader() as classloader
+     */
     public MavenURLStreamHandlerProvider() {
         this(MavenURLStreamHandlerProvider.class.getClassLoader());
     }
 
+    /**
+     * Instantiates a new MavenURLStreamHandlerProvider.
+     *
+     * @param classLoader
+     *            the class loader to find urls
+     */
     public MavenURLStreamHandlerProvider(ClassLoader classLoader) {
         this.classLoader = classLoader;
     }
@@ -50,7 +59,7 @@ public class MavenURLStreamHandlerProvider extends URLStreamHandlerProvider {
         // de nem mukodik a TT-ben sem a "java.protocol.handler.pkgs" settings,
         // sem a src/main/resources/META-INF/services/java.net.spi.URLStreamHandlerProvider megoldas sem,
         // mert a jboss indulasnal beolvas sajat ModularURLStreamHandlerFactory osztaly
-        return "maven".equals(protocol) ? new Handler(classLoader) : createDefaultURLStreamHandler(protocol);
+        return "maven".equals(protocol) ? new MavenURLHandler(classLoader) : createDefaultURLStreamHandler(protocol);
     }
 
     /**
