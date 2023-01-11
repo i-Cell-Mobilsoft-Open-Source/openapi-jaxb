@@ -7,15 +7,15 @@ openapi-jaxb plugin
 
 == Maven central
 
-This project is available in maven central as:
+This plugin is available in maven central as:
 [source,xml]
 
 ----
     <dependency>
         <groupId>hu.icellmobilsoft.jaxb</groupId>
-        <artifactId>openapi-jaxb</artifactId>
-        <version>1.1.0</version>
+        <artifactId>openapi-jaxb-plugin</artifactId>
+        <version>2.0.0</version>
     </dependency>
 ----
 
-include::index.adoc[leveloffset=1]
+include::docs/index.adoc[leveloffset=1]

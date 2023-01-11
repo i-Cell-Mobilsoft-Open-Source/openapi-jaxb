@@ -1,19 +1,21 @@
 :toc: left
 :toclevels: 3
 :sectnums:
+:version-label!:
 = OpenApi 3 Plugin
 
 openapi-jaxb plugin
 
 == Maven central
-This project is available in maven central as:
+This plugin is available in maven central as:
 [source, xml]
 ----
     <dependency>
         <groupId>hu.icellmobilsoft.jaxb</groupId>
-        <artifactId>openapi-jaxb</artifactId>
+        <artifactId>openapi-jaxb-plugin</artifactId>
         <version>2.0.0</version>
     </dependency>
 ----
 
-include::docs/plugin.adoc[leveloffset=1]
+include::plugin.adoc[leveloffset=1]
+include::migration.adoc[leveloffset=1]

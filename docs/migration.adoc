@@ -1,0 +1,5 @@
+[#migration]
+= Migration guide
+
+include::migration/migration_1x_to_200.adoc[leveloffset=+1]
+

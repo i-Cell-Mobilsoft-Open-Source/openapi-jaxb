@@ -1,0 +1,51 @@
+= v1.x -> v2.0.0
+
+OpenAPI jaxb plugin 1.x -> 2.0.0 migration guide.
+
+== Changes
+
+=== Maven structure
+
+In version 1.0 the repository consisted of 2 maven projects
+
+* openapi-demo
+** demo project for plugin
+** maven coordinates - `hu.icellmobilsoft.jaxb:openapi-demo`
+* openapi-plugin
+** actual plugin
+** maven coordinates - `hu.icellmobilsoft.jaxb:openapi-jaxb`
+
+Since openapi-demo was not maintained, and depended on thorntail
+we decided to remove it entirely from `2.0`.
+The demo xsd-s were moved into a test sub-module
+with actual tests written to see if the generated classes are annotated
+as expected.
+
+As of 2.0 the new project structure is
+
+* openapi-jaxb - parent project, maven coordinates - `hu.icellmobilsoft.jaxb:openapi-jaxb`
+** openapi-jaxb-plugin - actual xjc openeapi generator plugin,  maven coordinates - `hu.icellmobilsoft.jaxb:openapi-jaxb-plugin`
+** openapi-jaxb-test - testsuite for the plugin - `hu.icellmobilsoft.jaxb:openapi-jaxb-test`
+
+.migration
+The plugin maven artifactId changed from openapi-jaxb to openapi-jaxb**-plugin**
+
+=== Dependencies, prerequisites
+
+==== Microprofile OpenAPI specification
+
+https://download.eclipse.org/microprofile/microprofile-open-api-3.0/microprofile-openapi-spec-3.0.html[MicroProfile OpenAPI Specification
+] has been upgraded to version 3.0.
+
+.migration
+The specification change does not include any breaking change in the plugin,
+it is most likely to work with previous mp-openapi versions, still 3.0 is recommended.
+
+==== JAXB 2.0 -> Jakarta XML Binding 4.0
+
+JAXB 2.0 has been changed to https://jakarta.ee/specifications/xml-binding/4.0[Jakarta XML Binding 4.0],
+thus the plugin needs XJC from the 4.0 implementation.
+
+.migration
+Compatible maven plugin for generation is
+`com.helger.maven:jaxb40-maven-plugin:0.16.0`, more info: <<openapi-usage, Use with maven plugin>>

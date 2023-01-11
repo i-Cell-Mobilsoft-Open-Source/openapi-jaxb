@@ -4,15 +4,19 @@
 
 The plugin is activated with the `-openapify` argument.
 
-=== Use with org.jvnet.jaxb2.maven2:maven-jaxb2-plugin maven plugin
+[#openapi-usage]
+=== Use with maven plugin
+
+The plugin requires XJC from jaxb 4.0,
+a viable solution is using the https://github.com/phax/maven-jaxb2-plugin/tree/v016[phax/maven-jaxb2-plugin] jaxb 4.0 maven plugin fork.
 
 [source,xml]
 ----
 <!-- ... -->
 <plugin>
-    <groupId>org.jvnet.jaxb2.maven2</groupId>
-    <artifactId>maven-jaxb2-plugin</artifactId>
-    <version>0.13.3</version>
+    <groupId>com.helger.maven</groupId>
+    <artifactId>jaxb40-maven-plugin</artifactId>
+    <version>0.16.0</version>
     <!-- ... -->
     <configuration>
         <schemaDirectory>src/main/resources</schemaDirectory>
@@ -26,8 +30,8 @@ The plugin is activated with the `-openapify` argument.
         <plugins>
             <plugin> <!--2-->
 				<groupId>hu.icellmobilsoft.jaxb</groupId>
-				<artifactId>openapi-jaxb</artifactId>
-				<version>1.2.0</version>
+				<artifactId>openapi-jaxb-plugin</artifactId>
+				<version>2.0.0</version>
             </plugin>
         </plugins>
     </configuration>
@@ -49,7 +53,7 @@ artifact should be included as dependency (at least with _provided_ scope)!
 			<dependency>
 				<groupId>org.eclipse.microprofile.openapi</groupId>
 				<artifactId>microprofile-openapi-api</artifactId>
-				<version>1.0.1</version>
+				<version>3.0.0</version>
 				<scope>provided</scope>
 			</dependency>
             <!-- ... -->
@@ -100,15 +104,15 @@ It annotates the classes generated from XSD-s with the `org.eclipse.microprofile
 Some xsd restrictions can not be included into OpenAPI schema definitions, and some OpenAPI implementations doesn't process the `Schema.enumeration`-s properly (or other parameters), furthermore the `<xsd:documentation>`-s provided on the enumeration constants are not generated into the openAPI yaml.
 Because of these the plugin can be run with the `verboseDescriptions` flag in order to extended the `description` property with a list of restriction or for enums with the list of possible values and their respective documentation (if any).
 
-==== Setting verbose description with maven-jaxb2-plugin maven plugin
+==== Setting verbose description with maven plugin
 
 [source,xml]
 ----
 <!-- ... -->
 <plugin>
-    <groupId>org.jvnet.jaxb2.maven2</groupId>
-    <artifactId>maven-jaxb2-plugin</artifactId>
-    <version>0.13.3</version>
+    <groupId>com.helger.maven</groupId>
+    <artifactId>jaxb40-maven-plugin</artifactId>
+    <version>0.16.0</version>
     <!-- ... -->
     <configuration>
         <schemaDirectory>src/main/resources</schemaDirectory>
@@ -123,8 +127,8 @@ Because of these the plugin can be run with the `verboseDescriptions` flag in or
         <plugins>
             <plugin>
 				<groupId>hu.icellmobilsoft.jaxb</groupId>
-				<artifactId>openapi-jaxb</artifactId>
-				<version>1.1.0</version>
+				<artifactId>openapi-jaxb-plugin</artifactId>
+				<version>2.0.0</version>
             </plugin>
 
         </plugins>
@@ -236,11 +240,5 @@ ie. from the following xsd only the `text` will be displayed as description
     <xs:documentation xml:lang="en">text</xs:documentation>
 </xs:annotation>
 ----
-
-== Example
-
-Poc application:
-ifndef::readme[link:../../openapi-demo[openapi-demo]]
-ifdef::readme[link:openapi-demo[openapi-demo]]
 
 
