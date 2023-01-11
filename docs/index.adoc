@@ -13,7 +13,7 @@ This plugin is available in maven central as:
     <dependency>
         <groupId>hu.icellmobilsoft.jaxb</groupId>
         <artifactId>openapi-jaxb-plugin</artifactId>
-        <version>2.0.0</version>
+        <version>${version}</version>
     </dependency>
 ----
 
