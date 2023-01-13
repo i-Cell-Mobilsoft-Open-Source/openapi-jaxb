@@ -1,0 +1,24 @@
+= openapi-jaxb plugin
+
+Openapi XJC plugin.
+When generating java code from xsd,
+this plugin annotates the generated classes with the proper OpenAPI annotations.
+
+== Compatibility
+
+
+|===
+|Plugin version |JAXB version | Microprofile OpenAPI version
+
+|1.x
+|2.0
+|1.0+
+
+|2.0.x
+|4.0
+|3.0+
+
+|===
+
+
+include::openapi.adoc[leveloffset=1]

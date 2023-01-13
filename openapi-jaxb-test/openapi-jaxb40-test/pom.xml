@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>openapi-jaxb-test</artifactId>
+        <groupId>hu.icellmobilsoft.jaxb</groupId>
+        <version>2.0.0-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>openapi-jaxb40-test</artifactId>
+
+    <dependencies>
+        <dependency>
+            <groupId>hu.icellmobilsoft.jaxb</groupId>
+            <artifactId>openapi-jaxb-test-xsd</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.microprofile.openapi</groupId>
+            <artifactId>microprofile-openapi-api</artifactId>
+            <version>3.0</version>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.xml.bind</groupId>
+            <artifactId>jakarta.xml.bind-api</artifactId>
+            <version>4.0.0</version>
+        </dependency>
+        <!--Test dependecies -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>5.8.1</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <!-- forkolt es releaselt plugin a felsobol kiindulva jaxb4-re -->
+                <!-- https://github.com/phax/maven-jaxb2-plugin/tree/v016 -->
+                <groupId>com.helger.maven</groupId>
+                <artifactId>jaxb40-maven-plugin</artifactId>
+                <version>0.16.0</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <schemaDirectory>src/main/resources</schemaDirectory>
+                    <!-- https://github.com/highsource/maven-jaxb2-plugin/wiki/Catalogs-in-Strict-Mode -->
+                    <catalog>src/main/resources/xsd/hu/icellmobilsoft/jaxb40/test/super.catalog.xml</catalog>
+                    <schemaIncludes>
+                        <include>xsd/hu/icellmobilsoft/jaxb40/test/super.xsd</include>
+                    </schemaIncludes>
+                    <generateDirectory>${project.build.directory}/generated-sources/src/main/java</generateDirectory>
+                    <args>
+                        <arguments>-openapify</arguments>
+                        <arguments>-openapify:verboseDescriptions</arguments>
+                    </args>
+                    <plugins>
+                        <plugin>
+                            <groupId>hu.icellmobilsoft.jaxb</groupId>
+                            <artifactId>openapi-jaxb-plugin</artifactId>
+                            <version>${project.version}</version>
+                        </plugin>
+                    </plugins>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>io.smallrye</groupId>
+                <artifactId>smallrye-open-api-maven-plugin</artifactId>
+                <version>3.1.0-RC1</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>generate-schema</goal>
+                        </goals>
+                        <!-- default process-classes, ami keso gitlab ci "compile" szamara -->
+                        <phase>compile</phase>
+                        <!-- sajnos a https://github.com/smallrye/smallrye-open-api/tree/main/tools/maven-plugin#m2e-integration
+                             valamiert kirorli a "paths" reszt az openapi fajlban, de konzolbol a maven jol kezeli.
+                             Problema a 'package' maven phase, ami valahogy elrontja-->
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/openapi</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

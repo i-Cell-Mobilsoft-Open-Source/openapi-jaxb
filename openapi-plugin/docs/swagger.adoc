@@ -1,8 +1,0 @@
-= Swagger generation
-
-It uses a https://github.com/peneksglazami/swagger-jaxb[fork] of the https://github.com/redlab/swagger-jaxb[`be.redlab.jaxb:swagger-jaxb`] xjc plugin.
-The used fork extends the original plugin with the processing of the `<xs:documentation>` tags.
-The fork had been refactored  (https://github.com/icellmobilsoft/swagger-jaxb[`hu.icellmobilsoft.jaxb:swagger-jaxb`])
-in order to simplify porting from Swagger to OpenAPI.
-
-The original Swagger compatible genearation is still available with providing the `-swaggerify` argument, see: https://github.com/redlab/swagger-jaxb/blob/master/README.md
