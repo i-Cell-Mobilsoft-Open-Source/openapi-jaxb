@@ -10,7 +10,7 @@
 
 	<groupId>hu.icellmobilsoft.jaxb</groupId>
 	<artifactId>openapi-jaxb</artifactId>
-	<version>2.0.0-SNAPSHOT</version>
+	<version>2.0.0</version>
 	<packaging>pom</packaging>
 	<modules>
 		<module>openapi-jaxb-plugin</module>
@@ -46,7 +46,7 @@
 		<connection>scm:git:git@github.com:icellmobilsoft/openapi-jaxb.git</connection>
 		<developerConnection>scm:git:git@github.com:icellmobilsoft/openapi-jaxb.git</developerConnection>
 		<url>https://github.com/icellmobilsoft/openapi-jaxb.git</url>
-		<tag>HEAD</tag>
+		<tag>openapi-jaxb-2.0.0</tag>
 	</scm>
 
 	<build>
