@@ -25,6 +25,7 @@
 		<failsafe.reportsDir>${project.build.directory}/failsafe-reports</failsafe.reportsDir>
 		<sonar.junit.reportPaths>${surefire.reportsDir}, ${failsafe.reportsDir}</sonar.junit.reportPaths>
 		<sonar.jacoco.reportPaths>${jacoco.ut.execution.data.file}, ${jacoco.it.execution.data.file}</sonar.jacoco.reportPaths>
+		<microprofile-openapi-api.version>3.1</microprofile-openapi-api.version>
 	</properties>
 
 	<prerequisites>

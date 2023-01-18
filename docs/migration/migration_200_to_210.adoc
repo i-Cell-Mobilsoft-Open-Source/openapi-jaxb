@@ -1,0 +1,11 @@
+= v2.0.0 -> v2.1.0
+
+OpenAPI jaxb plugin 2.0.0 -> 2.1.0 migration guide.
+
+== Changes
+
+=== Microprofile OpenAPI version
+
+Microprofile OpenAPI has been updated from *3.0.0* to
+https://download.eclipse.org/microprofile/microprofile-open-api-3.1/microprofile-openapi-spec-3.1.html[*3.1.0*]
+(part of https://microprofile.io/2023/01/10/microprofile-6-0-release[Microprofile 6.0])
