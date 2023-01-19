@@ -13,7 +13,6 @@
 
     <properties>
         <jaxb.impl.version>4.0.1</jaxb.impl.version>
-        <microprofile-openapi-api.version>3.0</microprofile-openapi-api.version>
     </properties>
 
     <dependencies>

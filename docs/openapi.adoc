@@ -31,7 +31,7 @@ a viable solution is using the https://github.com/phax/maven-jaxb2-plugin/tree/v
             <plugin> <!--2-->
 				<groupId>hu.icellmobilsoft.jaxb</groupId>
 				<artifactId>openapi-jaxb-plugin</artifactId>
-				<version>2.0.0</version>
+				<version>${openapi-jaxb-plugin.version}</version>
             </plugin>
         </plugins>
     </configuration>
@@ -53,7 +53,7 @@ artifact should be included as dependency (at least with _provided_ scope)!
 			<dependency>
 				<groupId>org.eclipse.microprofile.openapi</groupId>
 				<artifactId>microprofile-openapi-api</artifactId>
-				<version>3.0</version>
+				<version>${microprofile-openapi-api.version}</version>
 				<scope>provided</scope>
 			</dependency>
             <!-- ... -->
@@ -99,7 +99,8 @@ It annotates the classes generated from XSD-s with the `org.eclipse.microprofile
 |`//simpleType/restriction[@base="xs:string"]/enumeration[n]/@value`|`Schema.enumeration[n]`
 |===
 
-=== Verbose description
+[#verbose-descriptions]
+=== Verbose descriptions
 
 Some xsd restrictions can not be included into OpenAPI schema definitions, and some OpenAPI implementations doesn't process the `Schema.enumeration`-s properly (or other parameters), furthermore the `<xsd:documentation>`-s provided on the enumeration constants are not generated into the openAPI yaml.
 Because of these the plugin can be run with the `verboseDescriptions` flag in order to extended the `description` property with a list of restriction or for enums with the list of possible values and their respective documentation (if any).
@@ -115,11 +116,6 @@ Because of these the plugin can be run with the `verboseDescriptions` flag in or
     <version>0.16.0</version>
     <!-- ... -->
     <configuration>
-        <schemaDirectory>src/main/resources</schemaDirectory>
-        <schemaIncludes>
-            <include>xsd/hu/icellmobilsoft/icon/dto/super.xsd</include>
-        </schemaIncludes>
-        <generateDirectory>${project.build.directory}/generated-sources/src/main/java</generateDirectory>
         <args>
 			<arguments>-openapify</arguments><!--1-->
 			<arguments>-openapify:verboseDescriptions</arguments><!--2-->
@@ -128,9 +124,8 @@ Because of these the plugin can be run with the `verboseDescriptions` flag in or
             <plugin>
 				<groupId>hu.icellmobilsoft.jaxb</groupId>
 				<artifactId>openapi-jaxb-plugin</artifactId>
-				<version>2.0.0</version>
+				<version>${openapi-jaxb-plugin.version}</version>
             </plugin>
-
         </plugins>
     </configuration>
 </plugin>
