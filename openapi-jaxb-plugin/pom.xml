@@ -21,6 +21,12 @@
             <artifactId>microprofile-openapi-api</artifactId>
             <version>${microprofile-openapi-api.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>hu.icellmobilsoft.jaxb</groupId>
+            <artifactId>openapi-jaxb-tool</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <dependency>
             <groupId>com.sun.xml.bind</groupId>
             <artifactId>jaxb-core</artifactId>

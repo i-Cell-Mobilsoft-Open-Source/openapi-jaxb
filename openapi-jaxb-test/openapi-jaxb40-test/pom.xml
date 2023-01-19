@@ -16,6 +16,11 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
+            <groupId>hu.icellmobilsoft.jaxb</groupId>
+            <artifactId>openapi-jaxb-tool</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.eclipse.microprofile.openapi</groupId>
             <artifactId>microprofile-openapi-api</artifactId>
             <version>${microprofile-openapi-api.version}</version>
@@ -60,6 +65,8 @@
                     <args>
                         <arguments>-openapify</arguments>
                         <arguments>-openapify:verboseDescriptions</arguments>
+<!--                        <arguments>-openapify:preferJavaName</arguments>-->
+<!--                        <arguments>-openapify:skipExtensions</arguments>-->
                     </args>
                     <plugins>
                         <plugin>
@@ -86,6 +93,7 @@
                              Problema a 'package' maven phase, ami valahogy elrontja-->
                         <configuration>
                             <outputDirectory>${project.build.directory}/openapi</outputDirectory>
+                            <filter>hu.icellmobilsoft.jaxb.openapi.tool.filter.XmlExtensionOpenAPIFilter</filter>
                         </configuration>
                     </execution>
                 </executions>

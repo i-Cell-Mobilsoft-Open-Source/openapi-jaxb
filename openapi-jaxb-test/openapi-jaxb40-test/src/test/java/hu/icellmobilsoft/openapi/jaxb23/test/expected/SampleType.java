@@ -23,14 +23,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
+import org.eclipse.microprofile.openapi.annotations.extensions.Extension;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 import hu.icellmobilsoft.openapi.dto.sample.sample.EnumeratedType;
 import hu.icellmobilsoft.openapi.dto.sample.sample.NoDocObject;
 
-@Schema(name = "SampleType", description = "Sample type (typeDoc)")
+@Schema(name = "SampleType", description = "Sample type (typeDoc)", extensions = {
+        @Extension(name = "x-xml-namespace", value = "http://sample.dto.openapi.icellmobilsoft.hu/sample")
+})
 public class SampleType {
 
+    @Schema(name = "case", title = "case", description = "Xml case\n\nRestrictions: \n* maxLength: 50\n* minLength: 10\n* pattern: .*[^\\s].*", required = true, maxLength = 50, minLength = 10, pattern = ".*[^\\s].*")
+    protected String _case;
     @Schema(name = "someString", title = "someString",
             description = "String value restricted (elementDoc)\n\nRestrictions: \n* maxLength: 50\n* minLength: 10\n* pattern: .*[^\\s].*",
             required = true, maxLength = 50, minLength = 10, pattern = ".*[^\\s].*")
@@ -46,6 +51,40 @@ public class SampleType {
     @Schema(name = "someCollection", title = "someCollection", description = "SampleObject array, containing 2 to 10 elements (elementDoc)",
             required = true, type = SchemaType.ARRAY, maxItems = 10, minItems = 2)
     protected List<SampleObject> someCollection;
+
+    @Schema(name = "attributeName", title = "attributeName", description = "Restrictions: \n* maxLength: 50\n* minLength: 10\n* pattern: .*[^\\s].*", required = true, maxLength = 50, minLength = 10, pattern = ".*[^\\s].*", extensions = {
+            @Extension(name = "x-xml-attribute", value = "true", parseValue = true)
+    })
+    protected String attributeName;
+
+    /**
+     * Gets the value of the case property.
+     *
+     * @return
+     *     possible object is
+     *     {@link String }
+     *
+     */
+    public String getCase() {
+        return _case;
+    }
+
+    /**
+     * Sets the value of the case property.
+     *
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *
+     */
+    public void setCase(String value) {
+        this._case = value;
+    }
+
+    @Schema(hidden = true)
+    public boolean isSetCase() {
+        return (this._case!= null);
+    }
 
     /**
      * Gets the value of the someString property.
@@ -185,6 +224,35 @@ public class SampleType {
 
     public void unsetSomeCollection() {
         this.someCollection = null;
+    }
+
+    /**
+     * Gets the value of the attributeName property.
+     *
+     * @return
+     *     possible object is
+     *     {@link String }
+     *
+     */
+    public String getAttributeName() {
+        return attributeName;
+    }
+
+    /**
+     * Sets the value of the attributeName property.
+     *
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *
+     */
+    public void setAttributeName(String value) {
+        this.attributeName = value;
+    }
+
+    @Schema(hidden = true)
+    public boolean isSetAttributeName() {
+        return (this.attributeName!= null);
     }
 
 }

@@ -19,9 +19,12 @@
  */
 package hu.icellmobilsoft.openapi.jaxb23.test.expected;
 
+import org.eclipse.microprofile.openapi.annotations.extensions.Extension;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
-@Schema(name = "NoDocObject")
+@Schema(name = "NoDocObject", extensions = {
+        @Extension(name = "x-xml-namespace", value = "http://sample.dto.openapi.icellmobilsoft.hu/sample")
+})
 public class NoDocObject {
 
     @Schema(name = "property", title = "property", required = true)

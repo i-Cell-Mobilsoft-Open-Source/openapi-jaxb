@@ -4,6 +4,25 @@
 
 The plugin is activated with the `-openapify` argument.
 
+=== Configuration arguments
+
+The following configuration options can be used via xjc arguments
+
+|===
+|Activation argument |Description
+
+|-openapify:verboseDescriptions
+|Schema descriptions will be more detailed when activated. See <<verbose-descriptions>>
+
+|-openapify:preferJavaName
+|For java fields the schema name will be the same as the java field name when activated instead of the actual xsd element name. See <<preferJavaName>>
+
+|-openapify:skipExtensions
+|Do not generate `extensions` on `@Schema` fields. See <<schema-extensions>>
+
+|===
+
+
 [#openapi-usage]
 === Use with maven plugin
 
@@ -219,6 +238,90 @@ Restrictions:
 * minimum: 2010-01-01
 * exclusiveMinimum: false
 * pattern: +\d{4}-\d{2}-\d{2}+
+
+[#preferJavaName]
+=== Java vs. XSD names
+
+In most cases the java field name will be the same as the xsd element name,
+but i.e. if the name is reserved in java xjc will generate different field name.
+
+.SampleType xsd definition
+[source, xml]
+----
+<xs:complexType name="SampleType">
+        <xs:sequence>
+            <xs:element name="case" type="xs:string"/>
+        </xs:sequence>
+</xs:complexType>
+----
+
+.SampleType generated java code
+[source, java]
+----
+public class SampleType {
+    @Schema(name = "case")
+    @XmlElement(name = "case")
+    protected String _case;
+}
+----
+
+By default the plugin will follow the xsd declaration and the `_case` field will have the
+`@Schema(name = "case")` annotation.
+
+This behaviour can be changed activating the *-openapify:preferJavaName* argument, in which case the schema name will be
+the same as the java field name, the annotaion will be `@Schema(name = "_case")`.
+
+.SampleType generated java code with `-openapify:preferJavaName` argument
+[source, java]
+----
+public class SampleType {
+    @Schema(name = "_case")
+    @XmlElement(name = "case")
+    protected String _case;
+}
+----
+
+[#schema-extensions]
+=== XML specific setting with schema Extensions
+
+The OpenAPI spec allows fine-tuning properties for
+https://github.com/eclipse/microprofile-open-api/blob/3.1/api/src/main/java/org/eclipse/microprofile/openapi/models/media/XML.java[XML].
+
+The plugin can generate the following properties as `@Extensions`
+
+
+|===
+|Property |Description |Generated extension key
+
+|name|XML name (can differ from json name)|`x-xml-name`
+|namespace|XML namespace|`x-xml-namespace`
+|prefix|XML namespace prefix|`x-xml-prefix`
+|attribute|Indicates that field is xml attribute not element|`x-xml-attribute`
+|===
+
+.Extension example
+[source, java]
+----
+@Schema(name = "SampleType", extensions = {
+    @Extension(name = "x-xml-namespace", value = "http://sample.dto.openapi.icellmobilsoft.hu/sample")
+})
+public class SampleType {
+
+    @Schema(name = "attributeName", extensions = {
+            @Extension(name = "x-xml-attribute", value = "true", parseValue = true)
+    })
+    protected String attributeName;
+}
+----
+
+The https://swagger.io/docs/specification/data-models/representing-xml/[OpenAPI specification]
+allows the properties above to be declared.
+In Microprofile 6.0 the `@Schema` annotation does not support it directly,
+but the `Schema` interface does.
+The `XmlExtensionUtil` or the `XmlExtensionOpenAPIFilter` in `openapi-jaxb-tool` module can be used to replace
+the extensions above with the correct `xml` fields.
+
+The extension generation can be turned off with `-openapify:skipExtensions` attribute.
 
 === Issues
 

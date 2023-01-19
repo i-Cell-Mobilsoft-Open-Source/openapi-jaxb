@@ -19,9 +19,12 @@
  */
 package hu.icellmobilsoft.openapi.jaxb23.test.expected;
 
+import org.eclipse.microprofile.openapi.annotations.extensions.Extension;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
-@Schema(name = "SampleObject", description = "Sample object (typeDoc)")
+@Schema(name = "SampleObject", description = "Sample object (typeDoc)", extensions = {
+        @Extension(name = "x-xml-namespace", value = "http://sample.dto.openapi.icellmobilsoft.hu/sample")
+})
 public class SampleObject {
 
     @Schema(name = "property", title = "property", description = "Restrictions: \n* maxLength: 50\n* minLength: 10\n* pattern: .*[^\\s].*",

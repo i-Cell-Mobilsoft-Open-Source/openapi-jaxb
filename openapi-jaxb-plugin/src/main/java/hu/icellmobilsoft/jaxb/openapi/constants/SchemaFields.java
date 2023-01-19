@@ -127,4 +127,9 @@ public class SchemaFields {
      * Constant for {@link Schema#example()} ()}
      */
     public static final String EXAMPLE = "example";
+
+    /**
+     * Constant for {@link Schema#extensions()}
+     */
+    public static final String EXTENSIONS = "extensions";
 }

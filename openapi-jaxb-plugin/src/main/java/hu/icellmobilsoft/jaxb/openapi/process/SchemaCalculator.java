@@ -21,6 +21,8 @@ package hu.icellmobilsoft.jaxb.openapi.process;
 
 import java.util.Optional;
 
+import hu.icellmobilsoft.jaxb.openapi.process.configuration.OpenApiPluginConfiguration;
+
 /**
  * SchemaCalculator interface.
  *
@@ -34,10 +36,10 @@ public interface SchemaCalculator<T> {
      *
      * @param outline
      *            the outline to calculate from
-     * @param verboseDescriptions
-     *            if verboseDescriptions should be generated
+     * @param openApiPluginConfiguration
+     *            plugin configurations
      * @return optional {@link SchemaHolder}
      */
-    Optional<SchemaHolder> calculateSchema(T outline, boolean verboseDescriptions);
+    Optional<SchemaHolder> calculateSchema(T outline, OpenApiPluginConfiguration openApiPluginConfiguration);
 
 }

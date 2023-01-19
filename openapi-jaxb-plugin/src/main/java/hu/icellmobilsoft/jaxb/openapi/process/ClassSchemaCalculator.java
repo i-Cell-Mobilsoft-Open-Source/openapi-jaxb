@@ -22,11 +22,15 @@ package hu.icellmobilsoft.jaxb.openapi.process;
 import java.util.Optional;
 import java.util.logging.Logger;
 
+import javax.xml.namespace.QName;
+
 import org.apache.commons.lang3.StringUtils;
 
 import com.sun.tools.xjc.outline.ClassOutline;
 import com.sun.tools.xjc.reader.xmlschema.bindinfo.BindInfo;
 import com.sun.xml.xsom.XSAnnotation;
+
+import hu.icellmobilsoft.jaxb.openapi.process.configuration.OpenApiPluginConfiguration;
 
 /**
  * {@link ClassOutline} implementation for {@link SchemaCalculator}
@@ -50,16 +54,34 @@ public class ClassSchemaCalculator implements SchemaCalculator<ClassOutline> {
     private Logger log = Logger.getLogger(ClassSchemaCalculator.class.getName());
 
     @Override
-    public Optional<SchemaHolder> calculateSchema(ClassOutline classOutline, boolean verboseDescriptions) {
+    public Optional<SchemaHolder> calculateSchema(ClassOutline classOutline, OpenApiPluginConfiguration openApiPluginConfiguration) {
         if (classOutline == null || classOutline.target == null || classOutline.ref == null) {
             return Optional.empty();
         }
 
         SchemaHolder schema = new SchemaHolder();
-        String name = classOutline.target.isElement() ? classOutline.target.getElementName().getLocalPart() : classOutline.ref.name();
+        String name;
+        String namespace = null;
+        String prefix = null;
+        if (classOutline.target.isElement()) {
+            name = classOutline.target.getElementName().getLocalPart();
+            namespace = classOutline.target.getElementName().getNamespaceURI();
+        } else if (classOutline.target.getTypeName() != null) {
+            QName typeName = classOutline.target.getTypeName();
+            name = typeName.getLocalPart();
+            namespace = typeName.getNamespaceURI();
+            prefix = typeName.getPrefix();
+        } else {
+            name = classOutline.ref.name();
+        }
         schema.setName(name);
         String documentation = getDocumentation(classOutline);
         schema.setDescription(documentation);
+        if (!openApiPluginConfiguration.isSkipExtensions() && !StringUtils.isAllBlank(namespace, prefix)) {
+            XmlHolder xml = schema.xml();
+            xml.setNamespace(namespace);
+            xml.setPrefix(prefix);
+        }
         return Optional.of(schema);
     }
 

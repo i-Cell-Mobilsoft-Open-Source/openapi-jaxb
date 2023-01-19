@@ -9,3 +9,15 @@ OpenAPI jaxb plugin 2.0.0 -> 2.1.0 migration guide.
 Microprofile OpenAPI has been updated from *3.0.0* to
 https://download.eclipse.org/microprofile/microprofile-open-api-3.1/microprofile-openapi-spec-3.1.html[*3.1.0*]
 (part of https://microprofile.io/2023/01/10/microprofile-6-0-release[Microprofile 6.0])
+
+=== XML fine-tuning support
+
+* Add support for xml name, namespace, prefix and attribute by using `@Extension` annotation. See <<schema-extensions>>
+* Add `XmlExtensionUtil` and `XmlExtensionOpenAPIFilter` to help replace extensions with xml attributes.
+* Use xml name instead of java name by default. See <<preferJavaName>>
+
+==== Migration
+
+* There should be no problem with upgrade when using OpenAPI 3.1.0
+* Add `XmlExtensionOpenAPIFilter` as OASFilter or use `XmlExtensionUtil` in existing filter if XML support should be generated.
+* The new features can be disabled by providing the `-openapify:skipExtensions`, `-openapify:preferJavaName` arguments to XJC.

@@ -32,6 +32,7 @@ import com.sun.tools.xjc.model.CPropertyInfo;
 import com.sun.tools.xjc.outline.FieldOutline;
 import com.sun.tools.xjc.reader.xmlschema.bindinfo.BindInfo;
 import com.sun.xml.xsom.XSAnnotation;
+import com.sun.xml.xsom.XSAttributeUse;
 import com.sun.xml.xsom.XSComponent;
 import com.sun.xml.xsom.XSElementDecl;
 import com.sun.xml.xsom.XSFacet;
@@ -41,6 +42,7 @@ import com.sun.xml.xsom.XSTerm;
 import com.sun.xml.xsom.XmlString;
 
 import hu.icellmobilsoft.jaxb.openapi.constants.SchemaFields;
+import hu.icellmobilsoft.jaxb.openapi.process.configuration.OpenApiPluginConfiguration;
 
 /**
  * {@link FieldOutline} implementation for {@link SchemaCalculator}
@@ -69,28 +71,33 @@ public class FieldSchemaCalculator implements SchemaCalculator<FieldOutline> {
     private Logger log = Logger.getLogger(FieldSchemaCalculator.class.getName());
 
     @Override
-    public Optional<SchemaHolder> calculateSchema(FieldOutline field, boolean verboseDescriptions) {
+    public Optional<SchemaHolder> calculateSchema(FieldOutline field, OpenApiPluginConfiguration openApiPluginConfiguration) {
         if (field == null) {
             return Optional.empty();
         }
         CPropertyInfo propertyInfo = field.getPropertyInfo();
-        String name = propertyInfo.getName(false);
+        String javaName = propertyInfo.getName(false);
+        String xmlName = getXmlName(propertyInfo);
 
         SchemaHolder schema = new SchemaHolder();
+        String name = openApiPluginConfiguration.isPreferJavaName() ? javaName : xmlName;
         schema.setName(name);
         schema.setTitle(name);
+        if (!openApiPluginConfiguration.isSkipExtensions() && !StringUtils.equals(name, xmlName)) {
+            schema.xml().setName(name);
+        }
         addArrayProperties(schema, propertyInfo);
         String description = getDescription(propertyInfo);
         StringBuilder restrictionBuilder = new StringBuilder();
 
-        addRestrictions(schema, restrictionBuilder, propertyInfo);
+        addRestrictions(schema, restrictionBuilder, propertyInfo, openApiPluginConfiguration);
 
         String restrictions = restrictionBuilder.toString();
         StringBuilder descriptionBuilder = new StringBuilder();
         if (StringUtils.isNotBlank(description)) {
             descriptionBuilder.append(description);
         }
-        if (StringUtils.isNotBlank(restrictions) && verboseDescriptions) {
+        if (StringUtils.isNotBlank(restrictions) && openApiPluginConfiguration.isVerboseDescriptions()) {
             descriptionBuilder.append(NEW_LINE).append(NEW_LINE)//
                     .append(RESTRICTIONS).append(COLON_MARK)//
                     .append(restrictions);
@@ -98,6 +105,26 @@ public class FieldSchemaCalculator implements SchemaCalculator<FieldOutline> {
 
         schema.setDescription(StringUtils.trim(descriptionBuilder.toString()));
         return Optional.of(schema);
+    }
+
+    private String getXmlName(CPropertyInfo property) {
+        String name = null;
+        // xsd szerinti nevet nézzük
+        XSComponent schemaComponent = property.getSchemaComponent();
+        if (schemaComponent instanceof XSParticle) {
+            XSParticle particle = (XSParticle) schemaComponent;
+            XSTerm xsTerm = particle.getTerm();
+            if (xsTerm != null && xsTerm.isElementDecl()) {
+                XSElementDecl elementDecl = xsTerm.asElementDecl();
+                name = elementDecl.getName();
+            }
+        }
+
+        // ha nem sikerül java nevet
+        if (name == null) {
+            name = property.getName(false);
+        }
+        return name;
     }
 
     /**
@@ -180,20 +207,39 @@ public class FieldSchemaCalculator implements SchemaCalculator<FieldOutline> {
      * @param property
      *            field property info
      */
-    private void addRestrictions(SchemaHolder schema, StringBuilder restrictionBuilder, CPropertyInfo property) {
+    private void addRestrictions(SchemaHolder schema, StringBuilder restrictionBuilder, CPropertyInfo property,
+            OpenApiPluginConfiguration openApiPluginConfiguration) {
         XSComponent schemaComponent = property.getSchemaComponent();
         if (schemaComponent instanceof XSParticle) {
             XSParticle particle = (XSParticle) schemaComponent;
             XSTerm xsTerm = particle.getTerm();
             if (xsTerm != null && xsTerm instanceof XSElementDecl && ((XSElementDecl) xsTerm).getType() != null
                     && ((XSElementDecl) xsTerm).getType().asSimpleType() != null) {
-                XSSimpleType xsSimpleType = ((XSElementDecl) xsTerm).getType().asSimpleType();
-                addLength(schema, xsSimpleType, restrictionBuilder);
-                addExtremum(schema, xsSimpleType, true, restrictionBuilder);
-                addExtremum(schema, xsSimpleType, false, restrictionBuilder);
-                addPattern(schema, xsSimpleType, restrictionBuilder);
+                addSimpleTypeRestrictions(schema, restrictionBuilder, ((XSElementDecl) xsTerm).getType().asSimpleType());
+            }
+        } else if (schemaComponent instanceof XSAttributeUse) {
+            XSAttributeUse attributeUse = (XSAttributeUse) schemaComponent;
+            if (!openApiPluginConfiguration.isSkipExtensions()) {
+                XmlHolder xml = schema.xml();
+                xml.setAttribute(true);
+            }
+            if (attributeUse.isRequired()) {
+                schema.setRequired(true);
+            }
+            if (attributeUse.getDefaultValue() != null) {
+                schema.setDefaultValue(attributeUse.getDefaultValue().toString());
+            }
+            if (attributeUse.getDecl() != null && attributeUse.getDecl().getType() != null) {
+                addSimpleTypeRestrictions(schema, restrictionBuilder, attributeUse.getDecl().getType());
             }
         }
+    }
+
+    private void addSimpleTypeRestrictions(SchemaHolder schema, StringBuilder restrictionBuilder, XSSimpleType xsSimpleType) {
+        addLength(schema, xsSimpleType, restrictionBuilder);
+        addExtremum(schema, xsSimpleType, true, restrictionBuilder);
+        addExtremum(schema, xsSimpleType, false, restrictionBuilder);
+        addPattern(schema, xsSimpleType, restrictionBuilder);
     }
 
     private void addPattern(SchemaHolder schema, XSSimpleType xsSimpleType, StringBuilder restrictionBuilder) {

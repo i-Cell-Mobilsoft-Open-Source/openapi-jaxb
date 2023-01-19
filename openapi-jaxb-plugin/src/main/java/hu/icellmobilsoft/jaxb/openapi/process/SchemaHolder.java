@@ -62,13 +62,15 @@ public class SchemaHolder {
     private String format;
     private String example;
     private boolean base64Binary;
+    private XmlHolder xml;
 
     // private ExternalDocumentation externalDocs;
 
     /**
      * Annotate with {@link Schema} annotation using the SchemaHolder's parameters
      *
-     * @param annotatable the annotatable (class, field, method, etc...)
+     * @param annotatable
+     *            the annotatable (class, field, method, etc...)
      */
     public void annotate(JAnnotatable annotatable) {
         if (annotatable == null) {
@@ -134,6 +136,11 @@ public class SchemaHolder {
         }
         if (StringUtils.isNotBlank(example)) {
             annotationUse.param(SchemaFields.EXAMPLE, example);
+        }
+
+        if (xml != null) {
+            JAnnotationArrayMember paramArray = annotationUse.paramArray(SchemaFields.EXTENSIONS);
+            xml.annotate(paramArray);
         }
     }
 
@@ -546,5 +553,17 @@ public class SchemaHolder {
      */
     public void setBase64Binary(boolean base64Binary) {
         this.base64Binary = base64Binary;
+    }
+
+    /**
+     * Gets xml holder, creates if null.
+     *
+     * @return the XmlHolder
+     */
+    public XmlHolder xml() {
+        if (xml == null) {
+            xml = new XmlHolder();
+        }
+        return xml;
     }
 }

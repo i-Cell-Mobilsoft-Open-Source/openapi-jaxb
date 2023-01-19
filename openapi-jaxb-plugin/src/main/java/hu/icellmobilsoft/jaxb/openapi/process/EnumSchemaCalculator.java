@@ -33,6 +33,7 @@ import com.sun.tools.xjc.outline.EnumConstantOutline;
 import com.sun.tools.xjc.outline.EnumOutline;
 import com.sun.tools.xjc.reader.xmlschema.bindinfo.BindInfo;
 import com.sun.xml.xsom.XSAnnotation;
+import hu.icellmobilsoft.jaxb.openapi.process.configuration.OpenApiPluginConfiguration;
 
 /**
  * {@link EnumOutline} implementation for {@link SchemaCalculator}
@@ -56,7 +57,7 @@ public class EnumSchemaCalculator implements SchemaCalculator<EnumOutline> {
     private Logger log = Logger.getLogger(EnumSchemaCalculator.class.getName());
 
     @Override
-    public Optional<SchemaHolder> calculateSchema(EnumOutline enumOutline, boolean verboseDescriptions) {
+    public Optional<SchemaHolder> calculateSchema(EnumOutline enumOutline, OpenApiPluginConfiguration openApiPluginConfiguration) {
         if (enumOutline == null) {
             return Optional.empty();
         }

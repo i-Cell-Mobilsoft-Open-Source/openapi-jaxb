@@ -64,6 +64,11 @@
 			<xs:documentation xml:lang="en">Sample type (typeDoc)</xs:documentation>
 		</xs:annotation>
 		<xs:sequence>
+			<xs:element name="case" type="RestrictedString">
+				<xs:annotation>
+					<xs:documentation xml:lang="en">Xml case</xs:documentation>
+				</xs:annotation>
+			</xs:element>
 			<xs:element name="someString" type="RestrictedString">
 				<xs:annotation>
 					<xs:documentation xml:lang="en">String value restricted (elementDoc)</xs:documentation>
@@ -86,5 +91,6 @@
 				</xs:annotation>
 			</xs:element>
 		</xs:sequence>
+		<xs:attribute name="attributeName" type="RestrictedString" use="required"/>
 	</xs:complexType>
 </xs:schema>

@@ -46,6 +46,7 @@ import hu.icellmobilsoft.jaxb.openapi.process.EnumSchemaCalculator;
 import hu.icellmobilsoft.jaxb.openapi.process.FieldSchemaCalculator;
 import hu.icellmobilsoft.jaxb.openapi.process.SchemaCalculator;
 import hu.icellmobilsoft.jaxb.openapi.process.SchemaHolder;
+import hu.icellmobilsoft.jaxb.openapi.process.configuration.OpenApiPluginConfiguration;
 
 /**
  * The type Open api annotations jaxb plugin.
@@ -54,11 +55,14 @@ import hu.icellmobilsoft.jaxb.openapi.process.SchemaHolder;
  */
 public class OpenApiAnnotationsJaxbPlugin extends Plugin {
 
-    private static final String OPENAPIFY = "openapify";
-    private static final String VERBOSE_DESCRIPTIONS = OPENAPIFY + ":verboseDescriptions";
+    /**
+     * Plugin activation constant {@value}
+     */
+    public static final String OPENAPIFY = "openapify";
     private static final String USAGE = "Add this plugin to the JAXB classes generator classpath and provide the argument '-" + OPENAPIFY + "'.";
 
-    private boolean verboseDescriptions = false;
+    private OpenApiPluginConfiguration.ArgBuilder configBuilder = OpenApiPluginConfiguration.builder();
+    private OpenApiPluginConfiguration config;
 
     /**
      * {@inheritDoc}
@@ -87,9 +91,7 @@ public class OpenApiAnnotationsJaxbPlugin extends Plugin {
     public int parseArgument(Options opt, String[] args, int i) throws BadCommandLineException, IOException {
         int consumed = super.parseArgument(opt, args, i);
         String arg = args[i];
-        int indexOfVerboseDescriptions = arg.indexOf(VERBOSE_DESCRIPTIONS);
-        if (indexOfVerboseDescriptions > 0) {
-            verboseDescriptions = true;
+        if (configBuilder.processArg(arg)) {
             consumed++;
         }
         return consumed;
@@ -100,6 +102,7 @@ public class OpenApiAnnotationsJaxbPlugin extends Plugin {
      */
     @Override
     public boolean run(final Outline outline, final Options opt, final ErrorHandler errorHandler) throws SAXException {
+        config = configBuilder.build();
         processEnums(outline.getEnums(), errorHandler);
         processClasses(outline.getClasses(), errorHandler);
         return true;
@@ -118,7 +121,7 @@ public class OpenApiAnnotationsJaxbPlugin extends Plugin {
             return;
         }
         for (EnumOutline eo : enums) {
-            Optional<SchemaHolder> schema = getEnumSchemaCalculator().calculateSchema(eo, verboseDescriptions);
+            Optional<SchemaHolder> schema = getEnumSchemaCalculator().calculateSchema(eo, config);
             if (schema.isPresent() && eo.clazz != null) {
                 schema.get().annotate(eo.clazz);
             }
@@ -158,7 +161,7 @@ public class OpenApiAnnotationsJaxbPlugin extends Plugin {
             return;
         }
 
-        Optional<SchemaHolder> schema = getClassSchemaCalculator().calculateSchema(classOutline, verboseDescriptions);
+        Optional<SchemaHolder> schema = getClassSchemaCalculator().calculateSchema(classOutline, config);
         if (schema.isPresent() && classOutline.implClass != null) {
             schema.get().annotate(classOutline.implClass);
         }
@@ -179,7 +182,7 @@ public class OpenApiAnnotationsJaxbPlugin extends Plugin {
     protected void processFields(ClassOutline parentOutline, FieldOutline[] declaredFields, ErrorHandler errorHandler) throws SAXException {
         if (ArrayUtils.isNotEmpty(declaredFields)) {
             for (FieldOutline declaredField : declaredFields) {
-                Optional<SchemaHolder> schemaHolderOpt = getFieldSchemaCalculator().calculateSchema(declaredField, verboseDescriptions);
+                Optional<SchemaHolder> schemaHolderOpt = getFieldSchemaCalculator().calculateSchema(declaredField, config);
 
                 if (schemaHolderOpt.isPresent()) {
                     annotateFields(schemaHolderOpt.get(), parentOutline, declaredField, errorHandler);

@@ -15,6 +15,7 @@
 	<modules>
 		<module>openapi-jaxb-plugin</module>
 		<module>openapi-jaxb-test</module>
+		<module>openapi-jaxb-tool</module>
 	</modules>
 
 	<properties>
