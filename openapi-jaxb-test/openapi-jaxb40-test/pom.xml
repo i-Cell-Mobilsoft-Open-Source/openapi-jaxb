@@ -37,7 +37,7 @@
     <build>
         <plugins>
             <plugin>
-                <!-- forkolt es releaselt plugin a felsobol kiindulva jaxb4-re -->
+                <!-- Starting from the above-mentioned forked and released plugin, move towards JAXB 4-->
                 <!-- https://github.com/phax/maven-jaxb2-plugin/tree/v016 -->
                 <groupId>com.helger.maven</groupId>
                 <artifactId>jaxb40-maven-plugin</artifactId>
@@ -79,11 +79,11 @@
                         <goals>
                             <goal>generate-schema</goal>
                         </goals>
-                        <!-- default process-classes, ami keso gitlab ci "compile" szamara -->
+                        <!-- default process-classes, which is late for the GitLab CI "compile"-->
                         <phase>compile</phase>
                         <!-- sajnos a https://github.com/smallrye/smallrye-open-api/tree/main/tools/maven-plugin#m2e-integration
-                             valamiert kirorli a "paths" reszt az openapi fajlban, de konzolbol a maven jol kezeli.
-                             Problema a 'package' maven phase, ami valahogy elrontja-->
+                             It seems to omit the "paths" section in the OpenAPI file, but Maven handles it well from the console.
+                             Problem with the 'package' Maven phase, somehow messing up-->
                         <configuration>
                             <outputDirectory>${project.build.directory}/openapi</outputDirectory>
                         </configuration>
