@@ -231,7 +231,7 @@ ie. from the following xsd only the `text` will be displayed as description
 [source,xml]
 ----
 <xs:annotation>
-    <xs:documentation xml:lang="hu">szöveg</xs:documentation>
+    <xs:documentation xml:lang="hu">text</xs:documentation>
     <xs:documentation xml:lang="en">text</xs:documentation>
 </xs:annotation>
 ----
